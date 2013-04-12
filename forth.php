@@ -2,9 +2,10 @@
 
 /**
  * TODO: 
- *  - nested lists
+ *  - nested expressions (concat on ';', don't just evaluate )
  *  - anonymous functions
  *  - beta-reduction in lists
+ *  _ perfix-style operations ": a 5 ;"
  */
 class Parser 
 {
@@ -86,6 +87,7 @@ class Parser
     {
         $stack = null;
         $tmp = array();
+        $level = 0;
 
         foreach($tokens as $token) {
             switch($token) {
@@ -93,6 +95,7 @@ class Parser
                 case "{":
                 case "[": 
                     // ... open a new substack
+                    $level++;
                     if ($stack !== null) {
                         $tmp[] = $stack;
                     }
@@ -102,6 +105,7 @@ class Parser
                 case "}":
                 case "]":
                     // ... close the most recent substack
+                    $level--;
                     $tmp[] = $stack;
                     $last     = array_pop($tmp);
                     $second   = array_pop($tmp);
@@ -110,11 +114,20 @@ class Parser
                     break;
 
                 case ";":
-                    // ... execute stack
-                    $e = self::translate($stack) . ";\n";
-                    //echo $e;
-                    eval($e);
-                    $stack = array();
+                    // ... execute 
+
+                    $e = self::translate($stack);
+
+                    // top level expressions can be executed,
+                    if ($level == 0) {
+                        $e .= "; \n";
+                        echo $e;
+                        eval($e);
+                        $stack = array();
+                    } else {
+                        // ... inner blocks are delayed, don't execute.
+                        $stack = $e;
+                    }
                     break;
 
                 default:
@@ -149,7 +162,6 @@ class Parser
         return $output;
     }
 
-
     /**
      * Work around some issues with PHP (i.e. assignment can't be done via a function, so we
      * convert the function syntax `set(x,y)` to `x = y`.)
@@ -176,17 +188,20 @@ class Parser
                              $expr);
 
         // special case (anonymous functions)
-        $expr = preg_replace("/function\(([^,]+),([^,]+),(.*)\)/",
-                             '$1 = function ($args) { list($2) = $args; $3; }', 
+        $expr = preg_replace("/function\(([^,]+),(.*)\)/",
+                             '$1 = function ($args) { extract($args); $2; }', 
                              $expr);
 
         // special case (tru lambdas functions)
-        $expr = preg_replace("/lambda\(([^,]+),([^)]+)\)/",
-                             'function ($1) { $2; }', 
+        $expr = preg_replace("/lambda\((.*)\)/",
+                             'function ($args) { extract($args); $1; }', 
                              $expr);
 
         // special case (return)
-        $expr = preg_replace("/return\((.*)\)/", 'return ($1)', $expr);
+        $expr = preg_replace("/return\((.*)\)/", 'return ($1) ', $expr);
+
+        // special case (concatenatino)
+        $expr = preg_replace("/\.\((.*)\)/", 'Prelude::concat($1)', $expr);
 
         // echo "\nexpr: $expr\n";
         return $expr;
@@ -224,6 +239,10 @@ class Prelude {
             else
                 echo $arg . "\n";
         }
+    }
+    public static function concat() { 
+        $args = func_get_args();
+        return implode('', $args[0] );
     }
 }
 

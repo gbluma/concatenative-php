@@ -6,22 +6,33 @@ Document class ;
 
 # creates a Document with two members
 [ 'foo' => 'foo_value' 
-  'bar' => 'bar_value' ]
-    Document $MyDocument new ;
+  'bar' => 'bar_value'
+  'baz' => [ { $x echo ; } lambda ; ] 
+] Document $MyDocument new ;
 
 # prints two lines
-[ $MyDocument->foo $MyDocument->bar ]
+[ $MyDocument->foo $MyDocument->bar ] 
     Prelude::println ;
 
+[ 'x' => 'b' ] 
+    $MyDocument->baz ;
+
 # expands to variables 'a' and 'b'
-[ 'a' => 'hello' 
-  'b' => 'there' ] extract ;
+[ 'a' => [ 'hello' 'there' ]
+  'b' => 'bingo' ] extract ;
+
+[ 'hello ' "$b" 'abc' ] . ; echo ;
 
 # function syntax:
 # $foo2 = function($x) { return $x; }
-[ $x return ; ] [ $x ] $foo2 function ;
+#{ [ $x echo ; ] [ $x return ; ] } $foo2 function ;
 
-# { $x return } [ $x ] lambda ;
+#[ 'a' echo ; 'b' echo ; ] 
+
+#[ [ 'x' => 5 ] $foo2 ; ] echo ;
+
+# define an orphaned lambda
+# [ $x return ; ] lambda ;
 
 # variable assignment, $c = 'b'
 #file_get_contents('http://garrettbluma.com') $c set ;
