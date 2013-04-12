@@ -4,6 +4,7 @@
  * TODO: 
  *  - nested lists
  *  - anonymous functions
+ *  - beta-reduction in lists
  */
 class Parser 
 {
@@ -83,40 +84,41 @@ class Parser
      */
     public static function evaluate($tokens) 
     {
-        $stack = array();
-        $current_stack = null;
+        $stack = null;
+        $tmp = array();
 
         foreach($tokens as $token) {
             switch($token) {
+
+                case "{":
                 case "[": 
                     // ... open a new substack
-                    if ($current_stack !== null)
-                        array_push($stack, $current_stack);
-                    $current_stack = array();
+                    if ($stack !== null) {
+                        $tmp[] = $stack;
+                    }
+                    $stack = array();
                     break;
 
+                case "}":
                 case "]":
                     // ... close the most recent substack
-                    if ($current_stack === null)
-                        throw new Exception("Syntax error: invalid closed expression.");
-                    
-                    $stack[] = $current_stack;
-                    $current_stack = null;
+                    $tmp[] = $stack;
+                    $last     = array_pop($tmp);
+                    $second   = array_pop($tmp);
+                    $second[] = $last;
+                    $stack = $second;
                     break;
 
                 case ";":
                     // ... execute stack
                     $e = self::translate($stack) . ";\n";
-                    // echo $e;
+                    //echo $e;
                     eval($e);
                     $stack = array();
                     break;
 
                 default:
-                    if ($current_stack === null)
-                        $stack[] = $token;
-                    else
-                        $current_stack[] = $token;
+                    $stack[] = $token;
             }
         }
 
@@ -159,13 +161,32 @@ class Parser
         $expr = "$func(" . self::export($stack) . ")";
 
         // special case (assignment)
-        $expr = preg_replace("/set\(([^,]+),([^)]+)\)/","\$1 =\$2", $expr);
+        $expr = preg_replace("/set\(([^,]+),([^)]+)\)/",
+                             '$1 =$2', 
+                             $expr);
 
         // special case (class definition)
-        $expr = preg_replace("/class\(([^)]+)\)/","class \$1 extends Prototype {}", $expr);
+        $expr = preg_replace("/class\(([^)]+)\)/",
+                             'class $1 extends Prototype {}', 
+                             $expr);
 
         // special case (object instantiation)
-        $expr = preg_replace("/new\(([^,]+),([^,]+),([^)]+)\)/","\$1 = new \$2(\$3 )", $expr);
+        $expr = preg_replace("/new\(([^,]+),([^,]+),([^)]+)\)/",
+                             '$1 = new $2($3 )', 
+                             $expr);
+
+        // special case (anonymous functions)
+        $expr = preg_replace("/function\(([^,]+),([^,]+),(.*)\)/",
+                             '$1 = function ($args) { list($2) = $args; $3; }', 
+                             $expr);
+
+        // special case (tru lambdas functions)
+        $expr = preg_replace("/lambda\(([^,]+),([^)]+)\)/",
+                             'function ($1) { $2; }', 
+                             $expr);
+
+        // special case (return)
+        $expr = preg_replace("/return\((.*)\)/", 'return ($1)', $expr);
 
         // echo "\nexpr: $expr\n";
         return $expr;
