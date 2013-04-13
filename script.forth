@@ -1,6 +1,8 @@
 
 # Here's a comment
 
+"prelude.php" require_once ;
+
 # create a new class called Document
 Document class ;
 
@@ -32,7 +34,7 @@ Document class ;
 
 # define an orphaned lambda
 [ $x ] lambda |> $test set ;
-[ 'x' => 'HELLOO===========' ] $test |> $test2 set ;
+[ 'x' => 'HELLO' ] $test |> $test2 set ;
 $test2 Prelude::println ;
 
 # This works, but has nested braces

@@ -2,10 +2,10 @@
 
 /**
  * TODO: 
- *  - nested expressions (concat on ';', don't just evaluate )
- *  - anonymous functions
- *  - beta-reduction in lists
- *  _ perfix-style operations ": a 5 ;"
+ *  - consider auto-lambda on closing brace { }
+ *  - proper expression concatenation inside lists
+ *  - prefix-style operations ": a 5 ;"
+ *  - un-hygenic macros? (as a means of prefix-style perhaps)
  */
 class Parser 
 {
@@ -126,7 +126,7 @@ class Parser
                     // ... execute 
 
                     $e = self::translate($stack);
-                    echo $e . "\n";
+                    // echo $e . "\n\n";
 
                     // top level expressions can be executed,
                     if ($level == 0) {
@@ -244,36 +244,6 @@ class Prototype {
             $prop = $this->$method;
             return call_user_func_array($prop, $args);
         }
-    }
-}
-
-/**
- * Library functions
- */
-class Prelude {
-    public static function printIt($a) { 
-        echo $a;
-        return $a;
-    }
-    public static function println() { 
-        foreach(func_get_args() as $arg) {
-            if (is_array($arg)) 
-                echo implode("\n", $arg) . "\n";
-            else
-                echo $arg . "\n";
-        }
-    }
-    public static function concat() { 
-        $args = func_get_args();
-        return implode('', $args[0] );
-    }
-
-    public static function map($f, $arr) {
-        $output = array();
-        foreach($arr as $a) {
-            $output[] = $f($a);
-        }
-        return $output;
     }
 }
 
