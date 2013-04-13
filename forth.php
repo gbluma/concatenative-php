@@ -89,8 +89,17 @@ class Parser
         $tmp = array();
         $level = 0;
 
+        $isPHP = false;
+        $rawPHP = "";
+
         foreach($tokens as $token) {
             switch($token) {
+
+                case "<?php ":
+                    $isPHP = true;
+                case "?>":
+                    $isPHP = false;
+                    eval($rawPHP);
 
                 case "{":
                 case "[": 
@@ -117,11 +126,11 @@ class Parser
                     // ... execute 
 
                     $e = self::translate($stack);
+                    echo $e . "\n";
 
                     // top level expressions can be executed,
                     if ($level == 0) {
                         $e .= "; \n";
-                        echo $e;
                         eval($e);
                         $stack = array();
                     } else {
@@ -130,8 +139,15 @@ class Parser
                     }
                     break;
 
+                case "|>":
+                    // ... special execute
+                    $e = self::translate($stack);
+                    $stack = array($e);
+                    break;
+
                 default:
-                    $stack[] = $token;
+                    if ($isPHP) $rawPHP .= $token;
+                    else        $stack[] = $token;
             }
         }
 
@@ -173,7 +189,7 @@ class Parser
         $expr = "$func(" . self::export($stack) . ")";
 
         // special case (assignment)
-        $expr = preg_replace("/set\(([^,]+),([^)]+)\)/",
+        $expr = preg_replace("/set\(([^,]+),(.*)\)/",
                              '$1 =$2', 
                              $expr);
 
@@ -194,8 +210,11 @@ class Parser
 
         // special case (tru lambdas functions)
         $expr = preg_replace("/lambda\((.*)\)/",
-                             'function ($args) { extract($args); $1; }', 
+                             'function ($args) { extract($args); return $1; }', 
                              $expr);
+
+        // special case (return)
+        $expr = preg_replace("/echo\(/", 'Prelude::printIt(', $expr);
 
         // special case (return)
         $expr = preg_replace("/return\((.*)\)/", 'return ($1) ', $expr);
@@ -232,6 +251,10 @@ class Prototype {
  * Library functions
  */
 class Prelude {
+    public static function printIt($a) { 
+        echo $a;
+        return $a;
+    }
     public static function println() { 
         foreach(func_get_args() as $arg) {
             if (is_array($arg)) 
@@ -243,6 +266,14 @@ class Prelude {
     public static function concat() { 
         $args = func_get_args();
         return implode('', $args[0] );
+    }
+
+    public static function map($f, $arr) {
+        $output = array();
+        foreach($arr as $a) {
+            $output[] = $f($a);
+        }
+        return $output;
     }
 }
 
