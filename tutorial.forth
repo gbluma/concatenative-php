@@ -29,7 +29,7 @@ $MyDocument->title echo ;
 $MyDocument->author echo ;
 # => 'Garrett Bluma'
 
-[ ] $MyDocument->hiFive ;
+$MyDocument->hiFive ;
 # => 'Hi Five'
 
 5 $five set ;

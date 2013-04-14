@@ -218,7 +218,7 @@ class Parser
 
         // special case (tru lambdas functions)
         $expr = preg_replace("/lambda\((.*)\)/",
-                             'function ($args) { extract($args); return $1; }', 
+                             'function ($args=array()) { extract($args); return $1; }', 
                              $expr);
 
         // special case (return)

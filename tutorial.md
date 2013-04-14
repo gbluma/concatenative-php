@@ -113,7 +113,7 @@ To test things, we can try the following:
     $MyDocument->author echo ;
     # => 'Garrett Bluma'
     
-    [ ] $MyDocument->hiFive ;
+    $MyDocument->hiFive ;
     # => 'Hi Five'
     
 
