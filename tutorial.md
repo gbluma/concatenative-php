@@ -37,14 +37,11 @@ We then have access to the functions in that library.
 Conditional operations
 ----------------------
 
-    5 $a set ;
-    
-    [ '5' => [ { $x 5 * ; } lambda ; ]
-      '6' => [ { $x 10 * ; } lambda ; ]
-    ] $a Prelude::cond |> $timesA set ;
-    
-    [ 'x' => 500 ] $timesA |> Prelude::println ;
-    # => 25
+    [ 'rtf' => 'Rich Text Format'
+      'doc' => 'Microsoft Document Format'
+      'xml' => 'Extensible Markup Language'
+    ] 'rtf' Prelude::cond ;
+    # => 'Rich Text Format'
 
 Defining functions
 ------------------
@@ -112,8 +109,10 @@ To test things, we can try the following:
 
     $MyDocument->title echo ;
     # => 'An introduction to php-forth'
+    
     $MyDocument->author echo ;
     # => 'Garrett Bluma'
+    
     [ ] $MyDocument->hiFive ;
     # => 'Hi Five'
     
@@ -187,6 +186,26 @@ result in an array for the next function.
       |> Prelude::println ;
     # => 5
     
+
+CURL example
+------------
+
+The following example uses the CURL module to connect to google and downlaod a web page.
+
+    # set up curl
+    curl_init |> $ch set ;
+    
+    [ CURLOPT_URL => 'http://google.com'
+      CURLOPT_RETURNTRANSFER => 1 
+      CURLOPT_TIMEOUT => 10
+      CURLOPT_CONNECTTIMEOUT => 10
+    ] $ch curl_setopt_array ;
+    
+    # make the request
+    $ch curl_exec |> $data set ;
+    
+    # output the data
+    $data echo ;
 
 
 
