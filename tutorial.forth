@@ -1,15 +1,17 @@
 # This is a comment
 
-"prelude.php" require_once ;
+"forth.php" require_once ;
 
 "Hello world" Prelude::println ;
 # => "Hello world"
 
 5 $a set ;
 
-#[ '5' => [ { $x 5 * ; } lambda ; ]
-#  '6' => [ { $x 10 * ; } lambda ; ]
-#] $a switch ;
+[ '5' => [ { $x 5 * ; } lambda ; ]
+  '6' => [ { $x 10 * ; } lambda ; ]
+] $a Prelude::cond |> $timesA set ;
+
+[ 'x' => 500 ] $timesA |> Prelude::println ;
 # => 25
 { $x } $foo function ;
 

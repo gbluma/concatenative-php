@@ -21,10 +21,10 @@ Calling functions
 
 Thus, we can load PHP files using the following syntax. 
 
-    "prelude.php" require_once ;
+    "forth.php" require_once ;
     
 
-This is equivalent to the PHP expression `require_once("prelude.php");`. Note, the semi-colon
+This is equivalent to the PHP expression `require_once("forth.php");`. Note, the semi-colon
 exists to *evaluate* the current stack, which we'll get to later. For now, just remember that
 nothing good will happen if it is left out.
 
@@ -37,13 +37,13 @@ We then have access to the functions in that library.
 Conditional operations
 ----------------------
 
-(Soon to be implemented)
-
     5 $a set ;
     
-    #[ '5' => [ { $x 5 * ; } lambda ; ]
-    #  '6' => [ { $x 10 * ; } lambda ; ]
-    #] $a switch ;
+    [ '5' => [ { $x 5 * ; } lambda ; ]
+      '6' => [ { $x 10 * ; } lambda ; ]
+    ] $a Prelude::cond |> $timesA set ;
+    
+    [ 'x' => 500 ] $timesA |> Prelude::println ;
     # => 25
 
 Defining functions

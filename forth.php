@@ -1,5 +1,7 @@
 <?php
 
+require_once("Match.php");
+
 /**
  * TODO: 
  *  - consider auto-lambda on closing brace { }
@@ -188,6 +190,12 @@ class Parser
         $func = array_shift($stack);
         $expr = "$func(" . self::export($stack) . ")";
 
+        // special case (arithmatic)
+        $expr = preg_replace("/\*\((.*)\)/", 'Prelude::product($1) ', $expr);
+        $expr = preg_replace("/\+\((.*)\)/", 'Prelude::sum($1) ', $expr);
+        $expr = preg_replace("/\-\((.*)\)/", 'Prelude::subtraction($1) ', $expr);
+        $expr = preg_replace("/\/\((.*)\)/", 'Prelude::division($1) ', $expr);
+
         // special case (assignment)
         $expr = preg_replace("/set\(([^,]+),(.*)\)/",
                              '$1 =$2', 
@@ -246,6 +254,82 @@ class Prototype {
         }
     }
 }
+
+/**
+ * Library functions
+ */
+class Prelude {
+    public static function printIt($a) { 
+        echo $a;
+        return $a;
+    }
+    public static function println() { 
+        foreach(func_get_args() as $arg) {
+            if (is_array($arg)) 
+                echo implode("\n", $arg) . "\n";
+            else
+                echo $arg . "\n";
+        }
+    }
+    public static function concat() { 
+        $args = func_get_args();
+        return implode('', $args[0] );
+    }
+
+    public static function map($f, $arr) {
+        $output = array();
+        foreach($arr as $a) {
+            $output[] = $f($a);
+        }
+        return $output;
+    }
+
+    public static function cond( $target, $arr ) {
+        foreach($arr as $key => $val) {
+            if ($target == $key) {
+                return $val;
+            }
+        }
+        return null;
+    }
+
+    public static function product() {
+        $args = func_get_args();
+        $prod = 1;
+        foreach($args as $arg) {
+            $prod *= $arg;
+        }
+        return $prod;
+    }
+
+    public static function sum() {
+        $args = func_get_args();
+        $sum = 0;
+        foreach($args as $arg) {
+            $sum += $arg;
+        }
+        return $sum;
+    }
+
+    public static function subtraction() {
+        $args = func_get_args();
+        $sum = 0;
+        foreach($args as $arg) {
+            $sum -= $arg;
+        }
+        return $sum;
+    }
+
+    public static function division() {
+        $args = func_get_args();
+        $prod = 1;
+        foreach($args as $arg) {
+            $prod /= $arg;
+        }
+        return $prod;
+    }
+}
+
 
 // ---------- start -------------
 if (count($argv) < 2) 
