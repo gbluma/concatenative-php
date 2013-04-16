@@ -168,7 +168,7 @@ All of the following work:
 > [ 'hello ' 'there' 'world' ] . ;   
 >
 
-Even nested expressions work. In the following we take the content of web-page, take the
+Nested expressions work. In the following we take the content of web-page, take the
 length of it (11193 characters), take the length of the length (`str_len('11193') = 5`) and
 output that value to the screen.
 

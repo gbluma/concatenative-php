@@ -90,6 +90,7 @@ class Parser
         $stack = null;
         $tmp = array();
         $level = 0;
+        $thunkCounter = 0;
 
         $isPHP = false;
         $rawPHP = "";
@@ -127,17 +128,21 @@ class Parser
                 case ";":
                     // ... execute 
 
-                    $e = self::translate($stack);
+                    $e = self::translate($stack) . "; \n";
                     // echo $e . "\n\n";
 
                     // top level expressions can be executed,
                     if ($level == 0) {
-                        $e .= "; \n";
+                        $e = $rawPHP . $e;
+                        echo "###{$e}###\n";
                         eval($e);
                         $stack = array();
+                        $thunkCounter = 0;
                     } else {
                         // ... inner blocks are delayed, don't execute.
-                        $stack = $e;
+                        $rawPHP .= "\$thunks['t$thunkCounter'] = function(\$args=array()) { extract(\$args); return $e };" ;
+                        $stack = array("Prelude::evalThunk(\$thunks['t$thunkCounter'], compact('thunks'))");
+                        $thunkCounter += 1;
                     }
                     break;
 
@@ -327,6 +332,15 @@ class Prelude {
             $prod /= $arg;
         }
         return $prod;
+    }
+
+    public static function evalThunk($f,$args) {
+        if (is_callable($f)) {
+          $r = $f($args);
+          return Prelude::evalThunk($r, $args);
+        } else {
+          return $f;
+        }
     }
 }
 

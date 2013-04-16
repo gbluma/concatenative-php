@@ -1,2 +1,3 @@
 
-[ 'foo' => [ 'foo_value' [ 'ab' echo ; ] 'cd' ] ] var_dump ;
+[ 'foo' => [ { 'one' echo ; 'two' echo ; } lambda ; ] 
+] var_dump ;
