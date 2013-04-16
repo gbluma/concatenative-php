@@ -1,3 +1,6 @@
 
-[ 'foo' => [ { 'one' echo ; 'two' echo ; } lambda ; ] 
-] var_dump ;
+{ 'defg' strlen ; 
+  'abc' strlen ;
+} $foo function ;
+
+$foo ;

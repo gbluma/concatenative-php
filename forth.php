@@ -133,16 +133,16 @@ class Parser
 
                     // top level expressions can be executed,
                     if ($level == 0) {
+                        //$rawPHP .= "Prelude::evalThunk(\$thunks['t$thunkCounter'], compact('thunks'));\n";
                         $e = $rawPHP . $e;
                         echo "###{$e}###\n";
                         eval($e);
                         $stack = array();
-                        $thunkCounter = 0;
                     } else {
-                        // ... inner blocks are delayed, don't execute.
-                        $rawPHP .= "\$thunks['t$thunkCounter'] = function(\$args=array()) { extract(\$args); return $e };" ;
-                        $stack = array("Prelude::evalThunk(\$thunks['t$thunkCounter'], compact('thunks'))");
+                        // ... inner blocks are delayed, don't directly execute.
                         $thunkCounter += 1;
+                        $rawPHP .= "\$thunks['t$thunkCounter'] = function(\$args=array()) { extract(\$args); return $e };\n" ;
+                        $stack = array("\$thunks['t$thunkCounter']");
                     }
                     break;
 
