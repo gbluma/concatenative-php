@@ -1,6 +1,7 @@
 
-{ 'defg' strlen ; 
-  'abc' strlen ;
+{  [ 'defg' strlen ; ]
+   [ 'abc' strlen ; $b set ; ] 
+   [ $b 2 * ; ]
 } $foo function ;
 
-$foo ;
+$foo |> var_dump ;

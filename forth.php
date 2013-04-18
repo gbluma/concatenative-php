@@ -133,16 +133,16 @@ class Parser
 
                     // top level expressions can be executed,
                     if ($level == 0) {
-                        //$rawPHP .= "Prelude::evalThunk(\$thunks['t$thunkCounter'], compact('thunks'));\n";
                         $e = $rawPHP . $e;
+                        $rawPHP = '';
                         echo "###{$e}###\n";
                         eval($e);
                         $stack = array();
                     } else {
                         // ... inner blocks are delayed, don't directly execute.
                         $thunkCounter += 1;
-                        $rawPHP .= "\$thunks['t$thunkCounter'] = function(\$args=array()) { extract(\$args); return $e };\n" ;
-                        $stack = array("\$thunks['t$thunkCounter']");
+                        $rawPHP .= "\$GLOBALS['thunks']['t$thunkCounter'] = function(\$args=array()) { extract(\$args); return $e };\n" ;
+                        $stack = array("Prelude::evalThunk(\$GLOBALS['thunks']['t$thunkCounter'])");
                     }
                     break;
 
@@ -218,7 +218,7 @@ class Parser
 
         // special case (anonymous functions)
         $expr = preg_replace("/function\(([^,]+),(.*)\)/",
-                             '$1 = function ($args) { extract($args); $2; }', 
+                             '$1 = function ($args=array()) { extract($args); return $2; }', 
                              $expr);
 
         // special case (tru lambdas functions)
@@ -334,13 +334,17 @@ class Prelude {
         return $prod;
     }
 
-    public static function evalThunk($f,$args) {
+    public static function evalThunk($f) {
         if (is_callable($f)) {
-          $r = $f($args);
-          return Prelude::evalThunk($r, $args);
+          $r = $f();
+          return Prelude::evalThunk($r);
         } else {
           return $f;
         }
+    }
+
+    public static function ignore($args) {
+        return;
     }
 }
 
