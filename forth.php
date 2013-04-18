@@ -135,14 +135,14 @@ class Parser
                     if ($level == 0) {
                         $e = $rawPHP . $e;
                         $rawPHP = '';
-                        echo "###{$e}###\n";
+                        //echo "###{$e}###\n";
                         eval($e);
                         $stack = array();
                     } else {
                         // ... inner blocks are delayed, don't directly execute.
                         $thunkCounter += 1;
                         $rawPHP .= "\$GLOBALS['thunks']['t$thunkCounter'] = function(\$args=array()) { extract(\$args); return $e };\n" ;
-                        $stack = array("Prelude::evalThunk(\$GLOBALS['thunks']['t$thunkCounter'])");
+                        $stack = array("Prelude::evalThunk(\$GLOBALS['thunks']['t$thunkCounter'], \$args)");
                     }
                     break;
 
@@ -334,10 +334,10 @@ class Prelude {
         return $prod;
     }
 
-    public static function evalThunk($f) {
+    public static function evalThunk($f, $args) {
         if (is_callable($f)) {
-          $r = $f();
-          return Prelude::evalThunk($r);
+          $r = $f($args);
+          return Prelude::evalThunk($r, $args);
         } else {
           return $f;
         }

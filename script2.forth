@@ -1,7 +1,7 @@
 
-{  [ 'defg' strlen ; ]
-   [ 'abc' strlen ; $b set ; ] 
-   [ $b 2 * ; ]
+{ [ 'defg' strlen ; echo ; " grills on the lawn\n" echo ; ]
+  [ 'abc' strlen ; echo ; " steaks grilling\n" echo ; ]
+  [ $a echo ; " cobs of corn\n" echo ; ]
 } $foo function ;
 
-$foo |> var_dump ;
+[ 'a' => 5 ] $foo ;
