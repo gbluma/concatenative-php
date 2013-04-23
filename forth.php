@@ -1,14 +1,6 @@
 <?php
 
-require_once("Match.php");
 
-/**
- * TODO: 
- *  - consider auto-lambda on closing brace { }
- *  - proper expression concatenation inside lists
- *  - prefix-style operations ": a 5 ;"
- *  - un-hygenic macros? (as a means of prefix-style perhaps)
- */
 class Parser 
 {
 
@@ -69,10 +61,23 @@ class Parser
                     }
                     break;
 
-                default:
-                    if (!$isInComment) {
-                        $currentToken .= $c;
+                case '{':
+                    if (!$isInComment && !$isInSingleQuote && !$isInDoubleQuote) { 
+                        $tokens[] = '[';
+                        // ... do nothing
                     }
+                    break;
+
+                case '}':
+                    if (!$isInComment && !$isInSingleQuote && !$isInDoubleQuote) { 
+                        $tokens[] = ']';
+                        $tokens[] = 'lambda';
+                        $tokens[] = '|>';
+                    }
+                    break;
+
+                default:
+                    if (!$isInComment) { $currentToken .= $c; }
             }
             
         }
