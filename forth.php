@@ -63,14 +63,14 @@ class Parser
 
                 case '{':
                     if (!$isInComment && !$isInSingleQuote && !$isInDoubleQuote) { 
-                        $tokens[] = '[';
+                        $tokens[] = '{';
                         // ... do nothing
                     }
                     break;
 
                 case '}':
                     if (!$isInComment && !$isInSingleQuote && !$isInDoubleQuote) { 
-                        $tokens[] = ']';
+                        $tokens[] = '}';
                         $tokens[] = 'lambda';
                         $tokens[] = '|>';
                     }
@@ -98,6 +98,7 @@ class Parser
         $thunkCounter = 0;
 
         $isPHP = false;
+        $inLambda = false;
         $rawPHP = "";
 
         foreach($tokens as $token) {
@@ -110,6 +111,7 @@ class Parser
                     eval($rawPHP);
 
                 case "{":
+                    $inLambda = true;
                 case "[": 
                     // ... open a new substack
                     $level++;
@@ -120,6 +122,7 @@ class Parser
                     break;
 
                 case "}":
+                    $inLambda = false;
                 case "]":
                     // ... close the most recent substack
                     $level--;
@@ -134,7 +137,6 @@ class Parser
                     // ... execute 
 
                     $e = self::translate($stack) . "; \n";
-                    // echo $e . "\n\n";
 
                     // top level expressions can be executed,
                     if ($level == 0) {
@@ -260,7 +262,15 @@ class Prototype {
     public function __call($method, $args) {
         if(property_exists($this, $method)) {
             $prop = $this->$method;
-            return call_user_func_array($prop, $args);
+            if (is_callable($prop)) {
+                return call_user_func_array($prop, $args);
+            } else if (is_array($prop) && count($prop) > 0) {
+                return call_user_func_array($prop[0], $args);
+            } else {
+                return $prop;
+            }
+        } else {
+            throw new Exception("$method method not callable");
         }
     }
 }
