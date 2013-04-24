@@ -1,6 +1,11 @@
 <?php
 
 
+/* TODO:
+ * - Conditionals
+ * - Scoped let-binding
+ */
+
 class Parser 
 {
 
@@ -70,6 +75,7 @@ class Parser
 
                 case '}':
                     if (!$isInComment && !$isInSingleQuote && !$isInDoubleQuote) { 
+                        // yep... pretty messed up.
                         $tokens[] = '}';
                         $tokens[] = 'lambda';
                         $tokens[] = '|>';
@@ -104,14 +110,10 @@ class Parser
         foreach($tokens as $token) {
             switch($token) {
 
-                case "<?php ":
-                    $isPHP = true;
-                case "?>":
-                    $isPHP = false;
-                    eval($rawPHP);
-
                 case "{":
                     $inLambda = true;
+                    // no break (continue with '[' case)
+                    
                 case "[": 
                     // ... open a new substack
                     $level++;
@@ -123,6 +125,8 @@ class Parser
 
                 case "}":
                     $inLambda = false;
+                    // no break (continue with ']' case)
+                    
                 case "]":
                     // ... close the most recent substack
                     $level--;
@@ -138,11 +142,12 @@ class Parser
 
                     $e = self::translate($stack) . "; \n";
 
-                    // top level expressions can be executed,
+                    // is this expression at the top level?
                     if ($level == 0) {
+                        // ... yes, top level expressions can be executed
                         $e = $rawPHP . $e;
                         $rawPHP = '';
-                        //echo "###{$e}###\n";
+                        echo "###{$e}###\n"; // debugging
                         eval($e);
                         $stack = array();
                     } else {
@@ -160,8 +165,10 @@ class Parser
                     break;
 
                 default:
-                    if ($isPHP) $rawPHP .= $token;
-                    else        $stack[] = $token;
+                    if ($isPHP) 
+                        $rawPHP .= $token;
+                    else
+                        $stack[] = $token;
             }
         }
 
@@ -169,7 +176,7 @@ class Parser
     }
 
     /**
-     * Handle some details of converting data to PHP..
+     * Handle some details of converting parser data to PHP..
      */
     public static function export($args) 
     {
@@ -194,7 +201,7 @@ class Parser
 
     /**
      * Work around some issues with PHP (i.e. assignment can't be done via a function, so we
-     * convert the function syntax `set(x,y)` to `x = y`.)
+     * convert the function syntax `let(x,y)` to `x = y`.)
      */
     public static function translate($stack) 
     {
@@ -209,29 +216,19 @@ class Parser
         $expr = preg_replace("/\/\((.*)\)/", 'Prelude::division($1) ', $expr);
 
         // special case (assignment)
-        $expr = preg_replace("/set\(([^,]+),(.*)\)/",
-                             '$1 =$2', 
-                             $expr);
+        $expr = preg_replace("/let\(([^,]+),(.*)\)/", '$1 =$2', $expr);
 
         // special case (class definition)
-        $expr = preg_replace("/class\(([^)]+)\)/",
-                             'class $1 extends Prototype {}', 
-                             $expr);
+        $expr = preg_replace("/class\(([^)]+)\)/", 'class $1 extends Prototype {}', $expr);
 
         // special case (object instantiation)
-        $expr = preg_replace("/new\(([^,]+),([^,]+),([^)]+)\)/",
-                             '$1 = new $2($3 )', 
-                             $expr);
+        $expr = preg_replace("/new\(([^,]+),([^,]+),([^)]+)\)/", '$1 = new $2($3 )', $expr);
 
         // special case (anonymous functions)
-        $expr = preg_replace("/function\(([^,]+),(.*)\)/",
-                             '$1 = function ($args=array()) { extract($args); return $2; }', 
-                             $expr);
+        $expr = preg_replace("/function\(([^,]+),(.*)\)/", '$1 = function ($args=array()) { extract($args); return $2; }', $expr);
 
         // special case (tru lambdas functions)
-        $expr = preg_replace("/lambda\((.*)\)/",
-                             'function ($args=array()) { extract($args); return $1; }', 
-                             $expr);
+        $expr = preg_replace("/lambda\((.*)\)/", 'function ($args=array()) { extract($args); return $1; }', $expr);
 
         // special case (return)
         $expr = preg_replace("/echo\(/", 'Prelude::printIt(', $expr);
@@ -242,7 +239,6 @@ class Parser
         // special case (concatenatino)
         $expr = preg_replace("/\.\((.*)\)/", 'Prelude::concat($1)', $expr);
 
-        // echo "\nexpr: $expr\n";
         return $expr;
     }
 }

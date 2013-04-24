@@ -1,6 +1,6 @@
 
-# set up curl
-curl_init |> $ch set ;
+# let up curl
+curl_init |> $ch let ;
 
 [ CURLOPT_URL => 'http://garrettbluma.com'
   CURLOPT_RETURNTRANSFER => 1 
@@ -9,7 +9,7 @@ curl_init |> $ch set ;
 ] $ch curl_setopt_array ;
 
 # make the request
-$ch curl_exec |> $data set ;
+$ch curl_exec |> $data let ;
 
 # output the data
 $data echo ;

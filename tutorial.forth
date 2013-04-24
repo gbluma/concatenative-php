@@ -32,18 +32,18 @@ $MyDocument->author echo ;
 $MyDocument->hiFive ;
 # => 'Hi Five'
  
-5 $five set ;
+5 $five let ;
  
 $five echo ;
 # => 5
-[ 1 2 3 4 5 ] $numbers set ;
+[ 1 2 3 4 5 ] $numbers let ;
 
 [ 'x' => 9
   'y' => 10
-  'z' => 11 ] $myArray set ;
+  'z' => 11 ] $myArray let ;
 
 # assignment
-9 $nine set ;
+9 $nine let ;
 
 # single argument-functions
 "abcdef" strlen ;
@@ -66,8 +66,8 @@ $five echo ;
   |> Prelude::println ;
 # => 5
 
-# set up curl
-curl_init |> $ch set ;
+# let up curl
+curl_init |> $ch let ;
 
 [ CURLOPT_URL => 'http://google.com'
   CURLOPT_RETURNTRANSFER => 1 
@@ -76,7 +76,7 @@ curl_init |> $ch set ;
 ] $ch curl_setopt_array ;
 
 # make the request
-$ch curl_exec |> $data set ;
+$ch curl_exec |> $data let ;
 
 # output the data
 $data echo ;

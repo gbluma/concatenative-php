@@ -21,8 +21,7 @@ Calling functions
 
 Thus, we can load PHP files using the following syntax. 
 
-> "forth.php" require_once ;
->
+    "forth.php" require_once ;
 
 This is equivalent to the PHP expression `require_once("forth.php");`. Note, the semi-colon
 exists to *evaluate* the current stack, which we'll get to later. For now, just remember that
