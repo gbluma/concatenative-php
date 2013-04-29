@@ -21,10 +21,9 @@ Calling functions
 
 Thus, we can load PHP files using the following syntax. 
 
-    "forth.php" require_once ;
-    
+   "language.php" require_once ;
 
-This is equivalent to the PHP expression `require_once("forth.php");`. Note, the semi-colon
+This is equivalent to the PHP expression `require_once("language.php");`. Note, the semi-colon
 exists to *evaluate* the current stack, which we'll get to later. For now, just remember that
 nothing good will happen if it is left out.
 
@@ -42,6 +41,7 @@ Conditional operations
       'xml' => 'Extensible Markup Language'
     ] 'rtf' Prelude::cond ;
     # => 'Rich Text Format'
+    
 
 Defining functions
 ------------------
@@ -95,9 +95,9 @@ traditional model, just because it provides simpler back-end semantics. To defin
 This extends the basic `Prototype` object and lets the rest of the runtime be aware of the
 `Document` class. To instantiate the new object we can do the following.
 
-    [ 'title'  => 'An introduction to php-forth' 
+    [ 'title'  => 'An introduction to Concatenative PHP' 
       'author' => 'Garrett Bluma'
-      'hiFive' => [ { 'Hi Five' echo ; } lambda ; ]
+      'hiFive' => [ { 'Hi Five' echo ; } ]
     ] Document $MyDocument new ;
     
 
@@ -108,7 +108,7 @@ class, we name it `$MyDocument` and then kick off the instantiation process with
 To test things, we can try the following:
 
     $MyDocument->title echo ;
-    # => 'An introduction to php-forth'
+    # => 'An introduction to Concatenative PHP'
     
     $MyDocument->author echo ;
     # => 'Garrett Bluma'
@@ -120,20 +120,20 @@ To test things, we can try the following:
 Variables
 ---------
 
-Variables can be defined using the `set` function. 
+Variables can be defined using the `let` function. 
 
-    5 $five set ;
+    5 $five let ;
     
     $five echo ;
     # => 5
 
 We can assign simple types, or complex types like arrays.
 
-    [ 1 2 3 4 5 ] $numbers set ;
+    [ 1 2 3 4 5 ] $numbers let ;
     
     [ 'x' => 9
       'y' => 10
-      'z' => 11 ] $myArray set ;
+      'z' => 11 ] $myArray let ;
     
 
 Oh, and that's the syntax for arrays right there. No commas needed. Associate arrays still use
@@ -150,7 +150,7 @@ these things, however theoretically they're all here.
 All of the following work:
 
     # assignment
-    9 $nine set ;
+    9 $nine let ;
     
     # single argument-functions
     "abcdef" strlen ;
@@ -168,17 +168,11 @@ All of the following work:
     [ 'hello ' 'there' 'world' ] . ;   
     
 
-Even nested expressions work. In the following we take the content of web-page, take the
-length of it (11193 characters), take the length of the length (`str_len('11193') = 5`) and
-output that value to the screen.
-
-    [ [ [ "http://garrettbluma.com" file_get_contents ; ] strlen ; ] strlen ; ] Prelude::println ;
-    # => 5
-    
-
-But this syntax is ugly. It would be nice to avoid these nested parentheses. Enter the `|>`
-operator. (It should be familiar if you've used F#.) It evaluates the stack, and wraps the
-result in an array for the next function. 
+Nested expressions work. In the following we take the content of web-page, take
+the length of it (11193 characters), take the length of the length
+(`str_len('11193') = 5`) and output that value to the screen.  The `|>`
+operator should be familiar if you've used F#. It evaluates the stack, and
+wraps the result in an array for the next function. 
 
     "http://garrettbluma.com" file_get_contents 
       |> strlen 
@@ -193,7 +187,7 @@ CURL example
 The following example uses the CURL module to connect to google and downlaod a web page.
 
     # set up curl
-    curl_init |> $ch set ;
+    curl_init |> $ch let ;
     
     [ CURLOPT_URL => 'http://google.com'
       CURLOPT_RETURNTRANSFER => 1 
@@ -202,7 +196,7 @@ The following example uses the CURL module to connect to google and downlaod a w
     ] $ch curl_setopt_array ;
     
     # make the request
-    $ch curl_exec |> $data set ;
+    $ch curl_exec |> $data let ;
     
     # output the data
     $data echo ;

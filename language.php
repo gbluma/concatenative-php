@@ -147,7 +147,7 @@ class Parser
                         // ... yes, top level expressions can be executed
                         $e = $rawPHP . $e;
                         $rawPHP = '';
-                        echo "###{$e}###\n"; // debugging
+                        //echo "###{$e}###\n"; // debugging
                         eval($e);
                         $stack = array();
                     } else {

@@ -1,7 +1,5 @@
 # This is a comment
 
-"forth.php" require_once ;
-
 "Hello world" Prelude::println ;
 # => "Hello world"
 
@@ -10,30 +8,31 @@
   'xml' => 'Extensible Markup Language'
 ] 'rtf' Prelude::cond ;
 # => 'Rich Text Format'
+
 { $x } $foo function ;
- 
+
 [ 'x' => 30 ] $foo ;
- 
+
 { $x } lambda ;
- 
+
 Document class ;
- 
-[ 'title'  => 'An introduction to php-forth' 
+
+[ 'title'  => 'An introduction to Concatenative PHP' 
   'author' => 'Garrett Bluma'
-  'hiFive' => [ { 'Hi Five' echo ; } ] 
+  'hiFive' => [ { 'Hi Five' echo ; } ]
 ] Document $MyDocument new ;
 
 $MyDocument->title echo ;
-# => 'An introduction to php-forth'
- 
+# => 'An introduction to Concatenative PHP'
+
 $MyDocument->author echo ;
 # => 'Garrett Bluma'
- 
+
 $MyDocument->hiFive ;
 # => 'Hi Five'
- 
+
 5 $five let ;
- 
+
 $five echo ;
 # => 5
 [ 1 2 3 4 5 ] $numbers let ;
@@ -66,7 +65,7 @@ $five echo ;
   |> Prelude::println ;
 # => 5
 
-# let up curl
+# set up curl
 curl_init |> $ch let ;
 
 [ CURLOPT_URL => 'http://google.com'
