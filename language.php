@@ -362,7 +362,7 @@ class Prelude {
 
 // ---------- start -------------
 if (count($argv) < 2) 
-    die("usage: php forth.php <filename>\n");
+    die("usage: php langauge.php <filename>\n");
 
 $prog = file_get_contents( $argv[1] );
 Parser::evaluate(Parser::tokenize($prog));
