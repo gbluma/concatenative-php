@@ -1,0 +1,14 @@
+
+# this should work
+{ [  $b $a * ;
+    5 $a let ; 
+    6 $b let ; ]
+} $thirty let ;
+
+# $thirty |> var_dump ;
+
+# t3 -> t2 -> t1 
+#  |--------> a
+#  L--> b
+#
+

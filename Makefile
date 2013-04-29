@@ -1,7 +1,7 @@
 
 test:
-	literate -s tutorial.lforth > tutorial.forth
-	literate -d tutorial.lforth > tutorial.md
-	php forth.php tutorial.forth
+	literate -s tutorial.lcphp > tutorial.cphp
+	literate -d tutorial.lcphp > tutorial.md
+	php language.php tutorial.cphp
 
 
