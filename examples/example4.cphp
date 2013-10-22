@@ -1,9 +1,9 @@
 
 # this should work
-{ [  $b $a * ;
+[ { $b $a * ;
     5 $a let ; 
-    6 $b let ; ]
-} $thirty let ;
+    6 $b let ; }
+] $thirty let ;
 
 # $thirty |> var_dump ;
 

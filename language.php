@@ -66,14 +66,14 @@ class Parser
                     }
                     break;
 
-                case '{':
+                case '[':
                     if (!$isInComment && !$isInSingleQuote && !$isInDoubleQuote) { 
                         $tokens[] = '{';
                         // ... do nothing
                     }
                     break;
 
-                case '}':
+                case ']':
                     if (!$isInComment && !$isInSingleQuote && !$isInDoubleQuote) { 
                         // yep... pretty messed up.
                         $tokens[] = '}';
@@ -110,11 +110,11 @@ class Parser
         foreach($tokens as $token) {
             switch($token) {
 
-                case "{":
+                case "[":
                     $inLambda = true;
                     // no break (continue with '[' case)
                     
-                case "[": 
+                case "{": 
                     // ... open a new substack
                     $level++;
                     if ($stack !== null) {
@@ -123,11 +123,11 @@ class Parser
                     $stack = array();
                     break;
 
-                case "}":
+                case "]":
                     $inLambda = false;
                     // no break (continue with ']' case)
                     
-                case "]":
+                case "}":
                     // ... close the most recent substack
                     $level--;
                     $tmp[] = $stack;

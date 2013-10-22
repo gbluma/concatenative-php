@@ -3,24 +3,24 @@
 "Hello world" Prelude::println ;
 # => "Hello world"
 
-[ 'rtf' => 'Rich Text Format'
+{ 'rtf' => 'Rich Text Format'
   'doc' => 'Microsoft Document Format'
   'xml' => 'Extensible Markup Language'
-] 'rtf' Prelude::cond ;
+} 'rtf' Prelude::cond ;
 # => 'Rich Text Format'
 
-{ $x } $foo function ;
+[ $x ] $foo function ;
 
-[ 'x' => 30 ] $foo ;
+{ 'x' => 30 } $foo ;
 
-{ $x } lambda ;
+[ $x ] lambda ;
 
 Document class ;
 
-[ 'title'  => 'An introduction to Concatenative PHP' 
+{ 'title'  => 'An introduction to Concatenative PHP' 
   'author' => 'Garrett Bluma'
-  'hiFive' => [ { 'Hi Five' echo ; } ]
-] Document $MyDocument new ;
+  'hiFive' => { [ 'Hi Five' echo ; ] }
+} Document $MyDocument new ;
 
 $MyDocument->title echo ;
 # => 'An introduction to Concatenative PHP'
@@ -35,11 +35,11 @@ $MyDocument->hiFive ;
 
 $five echo ;
 # => 5
-[ 1 2 3 4 5 ] $numbers let ;
+{ 1 2 3 4 5 } $numbers let ;
 
-[ 'x' => 9
+{ 'x' => 9
   'y' => 10
-  'z' => 11 ] $myArray let ;
+  'z' => 11 } $myArray let ;
 
 # assignment
 9 $nine let ;
@@ -57,7 +57,7 @@ $five echo ;
 # => 'Here's substitution: 9'
 
 # concatenation
-[ 'hello ' 'there' 'world' ] . ;   
+{ 'hello ' 'there' 'world' } . ;   
 
 "http://garrettbluma.com" file_get_contents 
   |> strlen 
@@ -68,11 +68,11 @@ $five echo ;
 # set up curl
 curl_init |> $ch let ;
 
-[ CURLOPT_URL => 'http://google.com'
+{ CURLOPT_URL => 'http://google.com'
   CURLOPT_RETURNTRANSFER => 1 
   CURLOPT_TIMEOUT => 10
   CURLOPT_CONNECTTIMEOUT => 10
-] $ch curl_setopt_array ;
+} $ch curl_setopt_array ;
 
 # make the request
 $ch curl_exec |> $data let ;

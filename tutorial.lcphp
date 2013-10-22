@@ -36,10 +36,10 @@ We then have access to the functions in that library.
 Conditional operations
 ----------------------
 
-> [ 'rtf' => 'Rich Text Format'
+> { 'rtf' => 'Rich Text Format'
 >   'doc' => 'Microsoft Document Format'
 >   'xml' => 'Extensible Markup Language'
-> ] 'rtf' Prelude::cond ;
+> } 'rtf' Prelude::cond ;
 > # => 'Rich Text Format'
 >
 
@@ -48,12 +48,12 @@ Defining functions
 
 Moving on to functions, we can define these with the following syntax.
 
-> { $x } $foo function ;
+> [ $x ] $foo function ;
 >
 
 And call them with the folowing syntax:
 
-> [ 'x' => 30 ] $foo ;
+> { 'x' => 30 } $foo ;
 > 
 
 There are some odd bits here, so take a second and catch them. 
@@ -75,7 +75,7 @@ There are some odd bits here, so take a second and catch them.
 
 We can also define anonymous functions using the `lambda` keyword.
 
-> { $x } lambda ;
+> [ $x ] lambda ;
 >
 
 The only difference here is that the function does not need a name. Behind the scenes both
@@ -95,10 +95,10 @@ traditional model, just because it provides simpler back-end semantics. To defin
 This extends the basic `Prototype` object and lets the rest of the runtime be aware of the
 `Document` class. To instantiate the new object we can do the following.
 
-> [ 'title'  => 'An introduction to Concatenative PHP' 
+> { 'title'  => 'An introduction to Concatenative PHP' 
 >   'author' => 'Garrett Bluma'
->   'hiFive' => [ { 'Hi Five' echo ; } ]
-> ] Document $MyDocument new ;
+>   'hiFive' => { [ 'Hi Five' echo ; ] }
+> } Document $MyDocument new ;
 > 
 
 Here we define a couple properties (*title* and *author*) while also defining a member
@@ -129,11 +129,11 @@ Variables can be defined using the `let` function.
 
 We can assign simple types, or complex types like arrays.
 
-> [ 1 2 3 4 5 ] $numbers let ;
+> { 1 2 3 4 5 } $numbers let ;
 >
-> [ 'x' => 9
+> { 'x' => 9
 >   'y' => 10
->   'z' => 11 ] $myArray let ;
+>   'z' => 11 } $myArray let ;
 >
 
 Oh, and that's the syntax for arrays right there. No commas needed. Associate arrays still use
@@ -165,7 +165,7 @@ All of the following work:
 > # => 'Here's substitution: 9'
 >
 > # concatenation
-> [ 'hello ' 'there' 'world' ] . ;   
+> { 'hello ' 'there' 'world' } . ;   
 >
 
 Nested expressions work. In the following we take the content of web-page, take
@@ -189,11 +189,11 @@ The following example uses the CURL module to connect to google and downlaod a w
 > # set up curl
 > curl_init |> $ch let ;
 > 
-> [ CURLOPT_URL => 'http://google.com'
+> { CURLOPT_URL => 'http://google.com'
 >   CURLOPT_RETURNTRANSFER => 1 
 >   CURLOPT_TIMEOUT => 10
 >   CURLOPT_CONNECTTIMEOUT => 10
-> ] $ch curl_setopt_array ;
+> } $ch curl_setopt_array ;
 > 
 > # make the request
 > $ch curl_exec |> $data let ;
