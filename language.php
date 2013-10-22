@@ -361,8 +361,16 @@ class Prelude {
 
 
 // ---------- start -------------
-if (count($argv) < 2) 
-    die("usage: php langauge.php <filename>\n");
+if (count($argv) < 2) {
+    while(true) {
+        echo ">>> ";
+        $handle = fopen ("php://stdin","r");
+        $line = fgets($handle);
+        Parser::evaluate(Parser::tokenize($line));
+        echo "\n";
+    }
+    exit(0);
+}
 
 $prog = file_get_contents( $argv[1] );
 Parser::evaluate(Parser::tokenize($prog));
