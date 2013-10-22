@@ -112,7 +112,7 @@ class Parser
 
                 case "[":
                     $inLambda = true;
-                    // no break (continue with '[' case)
+                    // no break (continue with '{' case)
                     
                 case "{": 
                     // ... open a new substack
@@ -125,7 +125,7 @@ class Parser
 
                 case "]":
                     $inLambda = false;
-                    // no break (continue with ']' case)
+                    // no break (continue with '}' case)
                     
                 case "}":
                     // ... close the most recent substack
