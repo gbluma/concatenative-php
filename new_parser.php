@@ -78,6 +78,7 @@ $funcs['*'] = function() { pop(); push(pop() * pop()); };
 $funcs['/'] = function() { pop(); $a = pop(); $b = pop(); push($b / $a); };
 $funcs['.'] = function() { pop(); echo pop(); };
 
+$funcs['}FFI'] = function() { pop(); eval(implode(" ", pop_back_to('FFI{', '}FFI')));  };
 
 // start repl
 while(true) {
