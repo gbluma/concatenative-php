@@ -73,6 +73,7 @@ $funcs['}'] = function() { pop(); $words = pop_back_to('{','}'); push($words); }
 $funcs['var_dump'] = function() { pop(); var_dump(pop()); };
 $funcs['.stack'] = function() { 
     global $stack; 
+    pop();
     echo "\n----Stack----\n";;
     foreach($stack as $s) { echo var_export($s) ."\n"; }
 };
@@ -100,14 +101,17 @@ $funcs['.'] = function() { pop(); echo pop(); };
 read(": 2over ( x y z -- x y z x y ) pick pick ;");
 
 // start repl
-while(true) {
-    echo ">>> ";
-    $handle = fopen ("php://stdin","r");
-    $line = fgets($handle);
-    read($line);
-    $funcs['.stack']();
+if (count($argv) < 2) {
+    while(true) {
+        echo ">>> ";
+        $handle = fopen ("php://stdin","r");
+        $line = fgets($handle);
+        read($line . " .stack" );
+    }
 }
 
+$prog = file_get_contents( $argv[1] );
+read($prog);
 
 
 
