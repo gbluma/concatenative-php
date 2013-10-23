@@ -83,7 +83,6 @@ $funcs[']'] = function() {
     pop(); 
     $words = pop_back_to('[', ']');
     push(function() use ($words) { 
-        echo "quot: " . implode(" ", $words) . "\n"; 
         return read(implode(" ", $words)); 
     });
 };
