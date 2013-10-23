@@ -26,7 +26,7 @@ $defer = 0;
 
 function process($word) { 
     global $stack, $funcs, $defer; 
-    if ($word == ';' || $defer === 0) {
+    if ($word == ';' || $defer <= 0) {
         if (isset($funcs[$word])) $funcs[$word](); 
     }
 }
@@ -123,7 +123,8 @@ $funcs['.stack'] = function() {
     echo "\n----Stack----\n";;
     foreach($stack as $s) { echo var_export($s) ."\n"; }
 };
-$funcs['}FFI'] = function() { pop(); eval("namespace new_parser; " . implode(" ", pop_back_to('FFI{', '}FFI')));  };
+$funcs['}FFI'] = function() { pop(); $words = pop_back_to('FFI{', '}FFI'); 
+    push(function() use ($words) { eval("namespace new_parser; " . implode(" ", $words)); });  };
 
 
 $funcs['clear'] = function() { global $stack; $stack = array(); };
