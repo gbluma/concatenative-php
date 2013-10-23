@@ -41,7 +41,7 @@ function read($str) {
                     $word = ''; 
                 } else { $word .= $c; }
                 break;
-            case "'": $squote = !$squote; $word .= $c; break;
+            //case "'": $squote = !$squote; $word .= $c; break;
             case '"': $dquote = !$dquote; $word .= $c; break;
             default: $word .= $c;
         }
