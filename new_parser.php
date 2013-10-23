@@ -13,13 +13,17 @@ function process($word) {
 }
 function push($x) { global $stack, $funcs; return array_push($stack, $x); }
 function pop() { global $stack, $funcs; return array_pop($stack); }
-function pop_back_to($x) { 
+function pop_back_to($down,$up) { 
     global $stack, $funcs; 
     $words = array();
+    $counter = 1;
     while( count($stack) > 0 ) {
         $word = pop();
-        if ($word === $x) { return array_reverse($words); } 
-        else { $words[] = $word; }
+        if ($word === $down) {
+            $counter--;
+            if ($counter <= 0) { return array_reverse($words); } 
+        } else if ($word === $up) { $counter++; }
+        $words[] = $word; 
     }
     return array_reverse($words);
 }
@@ -50,20 +54,20 @@ function read($str) {
 $funcs[']'] = function() { 
     global  $in_definition;
     pop(); 
-    $words = pop_back_to('[');
+    $words = pop_back_to('[', ']');
     push(function() use ($words) { return read(implode(" ", $words)); });
 };
 $funcs[':'] = function() { global $in_definition; $in_definition = true; };
 $funcs[';'] = function() { 
     global $funcs, $in_definition;
     pop(); 
-    $words = pop_back_to(':');
+    $words = pop_back_to(':',';');
     $name = array_shift($words);
     $funcs[$name] = function() use ($words){ pop(); return read(implode(" ", $words)); };
     $in_definition = false;
 };
 
-$funcs[')'] = function() { pop(); $words = pop_back_to('('); };
+$funcs[')'] = function() { pop(); $words = pop_back_to('(',')'); };
 $funcs['clear'] = function() { global $stack; $stack = array(); };
 $funcs['call'] = function() { pop(); $a = pop(); $a(); };
 $funcs['swap'] = function() { pop(); $a = pop(); $b = pop(); push($a); push($b); };
