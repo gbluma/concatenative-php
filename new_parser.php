@@ -68,8 +68,8 @@ function read($str) {
                     $word = ''; 
                 } else { $word .= $c; }
                 break;
-            //case "'": $squote = !$squote; $word .= $c; break;
-            case '"': $dquote = !$dquote; $word .= $c; break;
+            //case "'": $squote = !$squote; break;
+            case '"': $dquote = !$dquote; break;
 
             default: $word .= $c;
         }
@@ -115,7 +115,11 @@ $funcs['}'] = function() {
         push($words); 
     }
 };
+
 $funcs['var_dump'] = function() { pop(); var_dump(pop()); };
+$funcs['echo'] = function() { pop(); echo(pop()); };
+$funcs['println'] = function() { pop(); echo(pop()."\n"); };
+
 $funcs['.stack'] = function() { 
     global $stack; 
     pop();
@@ -127,6 +131,7 @@ $funcs['}FFI'] = function() { pop(); $words = pop_back_to('FFI{', '}FFI');
 
 
 $funcs['clear'] = function() { global $stack; $stack = array(); };
+$funcs['cond'] = function() { pop(); $key = pop(); $dict = pop(); push($dict[$key]);; };
 $funcs['call'] = function() { pop(); $a = pop(); $a(); };
 $funcs['swap'] = function() { pop(); $a = pop(); $b = pop(); push($a); push($b); };
 $funcs['dup'] = function() { pop(); $a = pop(); push($a); push($a); };
