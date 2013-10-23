@@ -12,6 +12,7 @@ Staight arrows (->) will indicate a pure function. Ticked identifiers act like
     : square ( int -> int ) dup * ;
     : pop ( 'a -> ) ... ;
     : swap ( 'a 'b -> 'b 'a ) ... ;
+    : map ( 'A ( 'A -> 'B ) -> 'B ) ... ;
 
 Tilde arrows (~>) will indicate a function with side-effects.
 
@@ -21,8 +22,8 @@ Lexical binding should just work, but the syntax changes.
 
     :: foo ( a -- b ) a 2 * ;
 
-    :: square ( a:int -> int ) a a * ;
-    :: sum ( { a : list int } -> int ) a 1 [ + ] binary-reduce ;
+    :: square ( a : int -> int ) a a * ;
+    :: sum ( a : ( list int ) -> int ) a 1 [ + ] binary-reduce ;
 
 Automatic currying is not going to be supported at the start.
 Polymorphic types are desired, but not necessary at the start.
