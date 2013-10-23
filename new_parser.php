@@ -22,12 +22,13 @@ namespace new_parser;
 
 $funcs = array();
 $stack = array();
-$in_definition = false;
+$defer = 0;
 
 function process($word) { 
-    global $stack, $funcs, $in_definition; 
-    if ($word == ';' or !$in_definition) 
+    global $stack, $funcs, $defer; 
+    if ($word == ';' || $defer === 0) {
         if (isset($funcs[$word])) $funcs[$word](); 
+    }
 }
 function push($x) { global $stack, $funcs; return array_push($stack, $x); }
 function pop() { global $stack, $funcs; return array_pop($stack); }
@@ -47,10 +48,14 @@ function pop_back_to($down,$up) {
 }
 
 function read($str) {
+    global $defer;
     $squote = $dquote = false;
     $word = '';
     foreach(str_split($str) as $c) {
         switch($c) {
+            case "[": case "(": case ":": $defer++; $word .= $c; break;
+            case "]": case ")": case ";": $defer--; $word .= $c; break;
+
             case " ": 
             case "\r": 
             case "\n": 
@@ -61,6 +66,7 @@ function read($str) {
                 break;
             //case "'": $squote = !$squote; $word .= $c; break;
             case '"': $dquote = !$dquote; $word .= $c; break;
+
             default: $word .= $c;
         }
     }
@@ -77,14 +83,12 @@ $funcs[']'] = function() {
         return read(implode(" ", $words)); 
     });
 };
-$funcs[':'] = function() { global $in_definition; $in_definition = true; };
 $funcs[';'] = function() { 
-    global $funcs, $in_definition;
+    global $funcs;
     pop(); 
     $words = pop_back_to(':',';');
     $name = array_shift($words);
     $funcs[$name] = function() use ($words){ pop(); return read(implode(" ", $words)); };
-    $in_definition = false;
 };
 $funcs[')'] = function() { pop(); $words = pop_back_to('(',')'); };
 $funcs['}'] = function() { pop(); $words = pop_back_to('{','}'); push($words); };
@@ -133,7 +137,9 @@ HERE;
         echo ">>> ";
         $handle = fopen ("php://stdin","r");
         $line = fgets($handle);
-        read($line . " .stack" );
+        read($line);
+        if (count($stack) > 0) read(".stack");
+        else echo "\n";
     }
 }
 
