@@ -1,0 +1,28 @@
+
+The plan is to introduce a hindley-milner style type system into this language.
+The syntax will look something like the following:
+
+Double-dashes indicate an untyped function.
+
+    : foo ( a -- b ) 2 * ;
+
+Staight arrows (->) will indicate a pure function. Ticked identifiers act like
+'Any'. Non-ticked ones are explicit types.
+
+    : square ( int -> int ) dup * ;
+    : pop ( 'a -> ) ... ;
+    : swap ( 'a 'b -> 'b 'a ) ... ;
+
+Tilde arrows (~>) will indicate a function with side-effects.
+
+    : echo ( 'a ~> ) ... ;
+
+Lexical binding should just work, but the syntax changes.
+
+    :: foo ( a -- b ) a 2 * ;
+
+    :: square ( a:int -> int ) a a * ;
+    :: sum ( { a : list int } -> int ) a 1 [ + ] binary-reduce ;
+
+Automatic currying is not going to be supported at the start.
+Polymorphic types are desired, but not necessary at the start.
