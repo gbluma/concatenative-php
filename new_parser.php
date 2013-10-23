@@ -95,7 +95,27 @@ $funcs[';'] = function() {
     $funcs[$name] = function() use ($words){ pop(); return read(implode(" ", $words)); };
 };
 $funcs[')'] = function() { pop(); $words = pop_back_to('(',')'); };
-$funcs['}'] = function() { pop(); $words = pop_back_to('{','}'); push($words); };
+$funcs['}'] = function() { 
+    pop(); 
+    $words = pop_back_to('{','}'); 
+    if (in_array('=>', $words)) {
+        // ... this is an associative array
+        $output = array();
+        for($i=0,$ii=count($words); $i<$ii; $i++) {
+            if ($words[$i] == "=>") {
+                if ($i-1 < 0 || $i+1 >= $ii) {
+                    throw new \Exception("Syntax error on associative array (".implode(' ', $words).")");
+                }
+                $key = $words[$i-1];
+                $value =  $words[$i+1];
+                $output[$key] = $value;
+            }
+        }
+        push($output);
+    } else {
+        push($words); 
+    }
+};
 $funcs['var_dump'] = function() { pop(); var_dump(pop()); };
 $funcs['.stack'] = function() { 
     global $stack; 
