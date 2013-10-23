@@ -120,6 +120,15 @@ read(": 2over ( x y z -- x y z x y ) pick pick ;");
 
 // start repl
 if (count($argv) < 2) {
+    echo <<<HERE
+
+Concatenative-PHP  Copyright (C) 2013  Garrett Bluma
+This program comes with ABSOLUTELY NO WARRANTY; for details read LICENSE.md.
+This is free software, and you are welcome to redistribute it.
+
+
+HERE;
+
     while(true) {
         echo ">>> ";
         $handle = fopen ("php://stdin","r");
