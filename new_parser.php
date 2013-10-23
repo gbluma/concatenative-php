@@ -31,7 +31,11 @@ function process($word) {
     }
 }
 function push($x) { global $stack, $funcs; return array_push($stack, $x); }
-function pop() { global $stack, $funcs; return array_pop($stack); }
+function pop() { 
+    global $stack, $funcs; 
+    if (count($stack) > 0) return array_pop($stack); 
+    else throw new \Exception("unable to pop value from stack: stack empty");
+}
 function pop_back_to($down,$up) { 
     global $stack, $funcs; 
     $words = array();
@@ -137,9 +141,13 @@ HERE;
         echo ">>> ";
         $handle = fopen ("php://stdin","r");
         $line = fgets($handle);
-        read($line);
-        if (count($stack) > 0) read(".stack");
-        else echo "\n";
+        try {
+            read($line);
+            if (count($stack) > 0) read(".stack");
+            else echo "\n";
+        } catch (\Exception $e) {
+            echo "ERROR: " . $e->getMessage() . "\n";
+        }
     }
 }
 
