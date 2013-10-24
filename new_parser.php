@@ -119,7 +119,6 @@ $funcs['}'] = function() {
 };
 
 $funcs['var_dump'] = function() { pop(); var_dump(pop()); };
-$funcs['echo'] = function() { pop(); echo(pop()); };
 $funcs['println'] = function() { pop(); echo(pop()."\n"); };
 
 $funcs['.stack'] = function() { 
@@ -151,6 +150,19 @@ $funcs['*'] = function() { pop(); push(pop() * pop()); };
 $funcs['/'] = function() { pop(); $a = pop(); $b = pop(); push($b / $a); };
 $funcs['mod'] = function() { pop(); $a = pop(); $b = pop(); push($b % $a); };
 $funcs['.'] = function() { pop(); echo pop(); };
+$funcs['echo'] = $funcs['.'];
+$funcs['length'] = function() { pop(); push(count(pop())); };
+$funcs['max'] = function() { $b = pop(); $a = pop(); push( ($a > $b) ? $a : $b  ); };
+$funcs['reduce'] = function() { 
+    global $stack;
+    pop(); 
+    $op = pop(); 
+    $ii = count($stack) - 1;
+    for($i=0; $i<$ii; $i++) {
+        push($op);
+        read("call");
+    }
+};
 
 $funcs['class'] = function() {
     pop();
