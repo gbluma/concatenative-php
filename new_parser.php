@@ -130,6 +130,7 @@ $funcs['}FFI'] = function() { pop(); $words = pop_back_to('FFI{', '}FFI');
     push(function() use ($words) { eval("namespace new_parser; " . implode(" ", $words)); });  };
 
 
+$funcs['load'] = function() { pop(); $c = file_get_contents(pop()); read($c); };
 $funcs['clear'] = function() { global $stack; $stack = array(); };
 $funcs['cond'] = function() { pop(); $key = pop(); $dict = pop(); push($dict[$key]);; };
 $funcs['call'] = function() { pop(); $a = pop(); $a(); };
