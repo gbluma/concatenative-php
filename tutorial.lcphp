@@ -10,10 +10,11 @@ parenthesis comes before the function name and the parameters are delimited by s
 `(foo x y)` ).  This language also delimits with spaces (same as Lisp) but switches the order
 from right to left and removes the requirement for parentheses too.  (i.e. `y x foo`).
 
-    >>> 3 3 + 2 -
-    4
+> 3 3 + 2 - .
+>
 
 > "Hello world" println
+>
 
 Comments
 ------------------
@@ -30,19 +31,24 @@ Whether you want to call them partial functions, curried functions, lambdas,
 thunks or, as they are known in the Forth community *quotations*, you can
 define them with square brackets.
 
-    [ dup * ]
+> [ dup * ]
+> clear           ( empty the stack )
+>
 
 And these can be called with the `call` word, or passed around.
 
-    >>> 3 [ dup * ] call .
-    9
-
-    >>> : deferred-square ( -- quot ) 
-            [ dup * ] ;
-    >>> : foo ( -- value ) 
-            3 deferred-square ;
-    >>> foo
-    9
+> 3 [ dup * ] call .
+>
+> : deferred-square ( -- quot ) 
+>   [ dup * ] ;
+>
+> : foo ( -- value ) 
+>   3 deferred-square ;
+>
+> foo
+>
+> clear           ( empty the stack )
+>
     
 Arrays
 ---------
@@ -55,9 +61,10 @@ Arrays are trivial to define, all of the following are valid arrays:
 >   "IL" => "Illinois" }
 > { "square" => [ dup * ]          ( array of qoutations )
 >   "cube"   => [ dup dup * * ] }
+>
+> clear           ( empty the stack )
+>
 
-
-> clear
 
 Defining functions
 -----------------
@@ -88,7 +95,7 @@ This language uses a prototype based OOP model. You might be familiar with this
 model if you've written javascript.
 
 > ( Here we define a new class, mainly for compatability with PHP )
-> Document class ;
+> Document class 
 >
 
 This extends the basic `Prototype` object and lets the rest of the runtime be aware of the

@@ -1,5 +1,23 @@
+3 3 + 2 - .
+
 "Hello world" println
+
 ( This is a comment )
+
+[ dup * ]
+clear           ( empty the stack )
+
+3 [ dup * ] call .
+
+: deferred-square ( -- quot ) 
+  [ dup * ] ;
+
+: foo ( -- value ) 
+  3 deferred-square ;
+
+foo
+
+clear           ( empty the stack )
 
 { 1 2 3 }                        ( simple array )
 { 2 3 { 1 2 3 } }                ( nested array )
@@ -7,9 +25,11 @@
   "IL" => "Illinois" }
 { "square" => [ dup * ]          ( array of qoutations )
   "cube"   => [ dup dup * * ] }
-clear
+
+clear           ( empty the stack )
+
 ( Here we define a new class, mainly for compatability with PHP )
-Document class ;
+Document class 
 
 : my-document ( -- doc ) 
   { 'title'  => 'An introduction to Concatenative PHP' 
