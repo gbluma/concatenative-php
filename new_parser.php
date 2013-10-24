@@ -163,6 +163,9 @@ $funcs['reduce'] = function() {
         read("call");
     }
 };
+$funcs['++'] = function() { pop(); $b = pop(); $a = pop(); push($a . $b); };
+$funcs['concat'] = $funcs['++'];
+$funcs['iota'] = function() { pop(); for($i=0,$ii=pop(); $i<$ii; $i++) { push($i); }  };
 
 $funcs['class'] = function() {
     pop();
