@@ -20,6 +20,8 @@
 
 namespace new_parser;
 
+require_once("prototype.php");
+
 $funcs = array();
 $stack = array();
 $defer = 0;
@@ -150,35 +152,26 @@ $funcs['/'] = function() { pop(); $a = pop(); $b = pop(); push($b / $a); };
 $funcs['mod'] = function() { pop(); $a = pop(); $b = pop(); push($b % $a); };
 $funcs['.'] = function() { pop(); echo pop(); };
 
+$funcs['class'] = function() {
+    pop();
+    $name = pop();
+    eval("class $name extends new_parser\Prototype {}");
+};
+$funcs['new'] = function() {
+    pop();
+    $classname = pop();
+    $internals = pop();
+    push(new $classname($internals));
+};
+
 read(": 2over ( x y z -- x y z x y ) pick pick ;");
 
-// start repl
-if (count($argv) < 2) {
-    echo <<<HERE
 
-Concatenative-PHP  Copyright (C) 2013  Garrett Bluma
-This program comes with ABSOLUTELY NO WARRANTY; for details read LICENSE.md.
-This is free software, and you are welcome to redistribute it.
-
-
-HERE;
-
-    while(true) {
-        echo ">>> ";
-        $handle = fopen ("php://stdin","r");
-        $line = fgets($handle);
-        try {
-            read($line);
-            if (count($stack) > 0) read(".stack");
-            else echo "\n";
-        } catch (\Exception $e) {
-            echo "ERROR: " . $e->getMessage() . "\n";
-        }
-    }
+// load a file if we have one
+if (isset($argv) && count($argv) > 1) {
+    $prog = file_get_contents( $argv[1] );
+    read($prog);
 }
-
-$prog = file_get_contents( $argv[1] );
-read($prog);
 
 
 
