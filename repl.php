@@ -1,8 +1,8 @@
 <?php
 
-namespace new_parser;
+namespace language;
 
-require_once("new_parser.php");
+require_once("language.php");
 
 // start repl
 echo <<<HERE

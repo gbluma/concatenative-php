@@ -1,6 +1,6 @@
 <?php
 
-namespace new_parser;
+namespace language;
 
 /**
  * This allows the classes to be constructed from lists using prototype-style objects.

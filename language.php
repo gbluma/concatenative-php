@@ -1,378 +1,195 @@
 <?php
 
-
-/* TODO:
- * - Conditionals
- * - Scoped let-binding
+/**
+ * Concatenative-PHP, a lightweight functional language built on PHP.
+ * Copyright (C) 2013  Garrett Bluma
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Parser 
-{
+namespace language;
 
-    /**
-     * Converts the document into a set of tokens, disregarding comments.
-     */
-    public static function tokenize($str) 
-    {
-        // counters
-        $tokens = array();   
-        $isInSingleQuote 
-            = $isInDoubleQuote 
-            = $isInComment
-            = false;
-        $currentToken    = '';
+require_once("prototype.php");
 
-        foreach(str_split($str) as $c) {
-            switch($c) {
+$funcs = array();
+$stack = array();
+$defer = 0;
 
-                case "\r":
-                case "\n":
-                case "\t":
-                case ' ': 
-                    if (!$isInComment) {
-                        if (!$isInSingleQuote && !$isInDoubleQuote) {
-                            if ($currentToken != '') {
-                                $tokens[] = $currentToken;
-                                $currentToken = '';
-                            }
-                        } else {
-                            // ... capture these characters while in quotes
-                            $currentToken .= $c;
-                        }
-                    }
-                    if ($c == "\n") {
-                        $isInComment = false;
-                    }
-                    break;
-
-                case "'":
-                    if (!$isInComment) {
-                        $isInSingleQuote = !$isInSingleQuote;
-                        $currentToken .= $c;
-                    }
-                    break;
-
-                case '"':
-                    if (!$isInComment) {
-                        $isInDoubleQuote = !$isInDoubleQuote;
-                        $currentToken .= $c;
-                    }
-                    break;
-
-                case '!':
-                case '#':
-                    if (!$isInSingleQuote && !$isInDoubleQuote) {
-                        $isInComment = true;
-                    }
-                    break;
-
-                case '[':
-                    if (!$isInComment && !$isInSingleQuote && !$isInDoubleQuote) { 
-                        $tokens[] = '{';
-                        // ... do nothing
-                    }
-                    break;
-
-                case ']':
-                    if (!$isInComment && !$isInSingleQuote && !$isInDoubleQuote) { 
-                        // yep... pretty messed up.
-                        $tokens[] = '}';
-                        $tokens[] = 'lambda';
-                        $tokens[] = '|>';
-                    }
-                    break;
-
-                default:
-                    if (!$isInComment) { $currentToken .= $c; }
-            }
-            
-        }
-        
-        // append whatever is at the end
-        $tokens[] = $currentToken;   
-        return $tokens;
-    }
-
-    /**
-     * Taking the tokens in, build semantics from the items given.
-     */
-    public static function evaluate($tokens) 
-    {
-        $stack = null;
-        $tmp = array();
-        $level = 0;
-        $thunkCounter = 0;
-
-        $isPHP = false;
-        $inLambda = false;
-        $rawPHP = "";
-
-        foreach($tokens as $token) {
-            switch($token) {
-
-                case "[":
-                    $inLambda = true;
-                    // no break (continue with '{' case)
-                    
-                case "{": 
-                    // ... open a new substack
-                    $level++;
-                    if ($stack !== null) {
-                        $tmp[] = $stack;
-                    }
-                    $stack = array();
-                    break;
-
-                case "]":
-                    $inLambda = false;
-                    // no break (continue with '}' case)
-                    
-                case "}":
-                    // ... close the most recent substack
-                    $level--;
-                    $tmp[] = $stack;
-                    $last     = array_pop($tmp);
-                    $second   = array_pop($tmp);
-                    $second[] = $last;
-                    $stack = $second;
-                    break;
-
-                case ";":
-                    // ... execute 
-
-                    $e = self::translate($stack) . "; \n";
-
-                    // is this expression at the top level?
-                    if ($level == 0) {
-                        // ... yes, top level expressions can be executed
-                        $e = $rawPHP . $e;
-                        $rawPHP = '';
-                        //echo "###{$e}###\n"; // debugging
-                        eval($e);
-                        $stack = array();
-                    } else {
-                        // ... inner blocks are delayed, don't directly execute.
-                        $thunkCounter += 1;
-                        $rawPHP .= "\$GLOBALS['thunks']['t$thunkCounter'] = function(\$args=array()) { extract(\$args); return $e };\n" ;
-                        $stack = array("Prelude::evalThunk(\$GLOBALS['thunks']['t$thunkCounter'], \$args)");
-                    }
-                    break;
-
-                case "|>":
-                    // ... special execute
-                    $e = self::translate($stack);
-                    $stack = array($e);
-                    break;
-
-                default:
-                    if ($isPHP) 
-                        $rawPHP .= $token;
-                    else
-                        $stack[] = $token;
-            }
-        }
-
-        return $stack;
-    }
-
-    /**
-     * Handle some details of converting parser data to PHP..
-     */
-    public static function export($args) 
-    {
-        $isFirst = true; 
-        $output = "";
-        foreach($args as $arg) {
-
-            if (!$isFirst) 
-                $output .= ", ";
-
-            $isFirst = false;
-            
-            if (is_array($arg)) {
-                $tmp = 'array('. self::export($arg) . ')';
-                $output .= str_replace(', =>,', ' =>', $tmp);
-            } else {
-                $output .= "$arg";
-            }
-        }
-        return $output;
-    }
-
-    /**
-     * Work around some issues with PHP (i.e. assignment can't be done via a function, so we
-     * convert the function syntax `let(x,y)` to `x = y`.)
-     */
-    public static function translate($stack) 
-    {
-        $stack = array_reverse($stack);
-        $func = array_shift($stack);
-        $expr = "$func(" . self::export($stack) . ")";
-
-        // special case (arithmatic)
-        $expr = preg_replace("/\*\((.*)\)/", 'Prelude::product($1) ', $expr);
-        $expr = preg_replace("/\+\((.*)\)/", 'Prelude::sum($1) ', $expr);
-        $expr = preg_replace("/\-\((.*)\)/", 'Prelude::subtraction($1) ', $expr);
-        $expr = preg_replace("/\/\((.*)\)/", 'Prelude::division($1) ', $expr);
-
-        // special case (assignment)
-        $expr = preg_replace("/let\(([^,]+),(.*)\)/", '$1 =$2', $expr);
-
-        // special case (class definition)
-        $expr = preg_replace("/class\(([^)]+)\)/", 'class $1 extends Prototype {}', $expr);
-
-        // special case (object instantiation)
-        $expr = preg_replace("/new\(([^,]+),([^,]+),([^)]+)\)/", '$1 = new $2($3 )', $expr);
-
-        // special case (anonymous functions)
-        $expr = preg_replace("/function\(([^,]+),(.*)\)/", '$1 = function ($args=array()) { extract($args); return $2; }', $expr);
-
-        // special case (tru lambdas functions)
-        $expr = preg_replace("/lambda\((.*)\)/", 'function ($args=array()) { extract($args); return $1; }', $expr);
-
-        // special case (return)
-        $expr = preg_replace("/echo\(/", 'Prelude::printIt(', $expr);
-
-        // special case (return)
-        $expr = preg_replace("/return\((.*)\)/", 'return ($1) ', $expr);
-
-        // special case (concatenatino)
-        $expr = preg_replace("/\.\((.*)\)/", 'Prelude::concat($1)', $expr);
-
-        return $expr;
+function process($word) { 
+    global $stack, $funcs, $defer; 
+    if ($word == ';' || $defer <= 0) {
+        if (isset($funcs[$word])) $funcs[$word](); 
     }
 }
-
-/**
- * This allows the classes to be constructed from lists using prototype-style objects.
- */
-class Prototype {
-    /** take in an array and create methods/properties from them */
-    public function __construct($args){
-        foreach($args as $key=>$value) {
-            $this->$key = $value;
-        }
+function push($x) { global $stack, $funcs; return array_push($stack, $x); }
+function pop() { 
+    global $stack, $funcs; 
+    if (count($stack) > 0) return array_pop($stack); 
+    else throw new \Exception("unable to pop value from stack: stack empty");
+}
+function pop_back_to($down,$up) { 
+    global $stack, $funcs; 
+    $words = array();
+    $counter = 1;
+    while( count($stack) > 0 ) {
+        $word = pop();
+        if ($word === $down) {
+            $counter--;
+            if ($counter <= 0) { return array_reverse($words); } 
+        } else if ($word === $up) { $counter++; }
+        $words[] = $word; 
     }
-
-    /** avoid issues with calling member variables that are anonymous functions */
-    public function __call($method, $args) {
-        if(property_exists($this, $method)) {
-            $prop = $this->$method;
-            if (is_callable($prop)) {
-                return call_user_func_array($prop, $args);
-            } else if (is_array($prop) && count($prop) > 0) {
-                return call_user_func_array($prop[0], $args);
-            } else {
-                return $prop;
-            }
-        } else {
-            throw new Exception("$method method not callable");
-        }
-    }
+    return array_reverse($words);
 }
 
-/**
- * Library functions
- */
-class Prelude {
-    public static function printIt($a) { 
-        echo $a;
-        return $a;
-    }
-    public static function println() { 
-        foreach(func_get_args() as $arg) {
-            if (is_array($arg)) 
-                echo implode("\n", $arg) . "\n";
-            else
-                echo $arg . "\n";
+function read($str) {
+    global $defer;
+    $squote = $dquote = false;
+    $word = '';
+    foreach(str_split($str) as $c) {
+        switch($c) {
+            case "[": case "(": case ":": $defer++; $word .= $c; break;
+            case "]": case ")": case ";": $defer--; $word .= $c; break;
+
+            case " ": 
+            case "\r": 
+            case "\n": 
+                if (!$squote && !$dquote) {
+                    if (!empty($word)) { push($word); process($word); } 
+                    $word = ''; 
+                } else { $word .= $c; }
+                break;
+            //case "'": $squote = !$squote; break;
+            case '"': $dquote = !$dquote; break;
+
+            default: $word .= $c;
         }
     }
-    public static function concat() { 
-        $args = func_get_args();
-        return implode('', $args[0] );
-    }
+    if (!empty($word)) { push($word); process($word); }
+}
 
-    public static function map($f, $arr) {
+// ---------------- std library -----------------
+
+$funcs[']'] = function() { 
+    pop(); 
+    $words = pop_back_to('[', ']');
+    push(function() use ($words) { 
+        return read(implode(" ", $words)); 
+    });
+};
+$funcs[';'] = function() { 
+    global $funcs;
+    pop(); 
+    $words = pop_back_to(':',';');
+    $name = array_shift($words);
+    $funcs[$name] = function() use ($words){ pop(); return read(implode(" ", $words)); };
+};
+$funcs[')'] = function() { pop(); $words = pop_back_to('(',')'); };
+$funcs['}'] = function() { 
+    pop(); 
+    $words = pop_back_to('{','}'); 
+    if (in_array('=>', $words)) {
+        // ... this is an associative array
         $output = array();
-        foreach($arr as $a) {
-            $output[] = $f($a);
-        }
-        return $output;
-    }
-
-    public static function cond( $target, $arr ) {
-        foreach($arr as $key => $val) {
-            if ($target == $key) {
-                return $val;
+        for($i=0,$ii=count($words); $i<$ii; $i++) {
+            if ($words[$i] == "=>") {
+                if ($i-1 < 0 || $i+1 >= $ii) {
+                    throw new \Exception("Syntax error on associative array (".implode(' ', $words).")");
+                }
+                $key = $words[$i-1];
+                $value =  $words[$i+1];
+                $output[$key] = $value;
             }
         }
-        return null;
+        push($output);
+    } else {
+        push($words); 
     }
+};
 
-    public static function product() {
-        $args = func_get_args();
-        $prod = 1;
-        foreach($args as $arg) {
-            $prod *= $arg;
-        }
-        return $prod;
-    }
+$funcs['var_dump'] = function() { pop(); var_dump(pop()); };
+$funcs['println'] = function() { pop(); echo(pop()."\n"); };
 
-    public static function sum() {
-        $args = func_get_args();
-        $sum = 0;
-        foreach($args as $arg) {
-            $sum += $arg;
-        }
-        return $sum;
-    }
+$funcs['.stack'] = function() { 
+    global $stack; 
+    pop();
+    echo "\n----Stack----\n";;
+    foreach($stack as $s) { echo var_export($s) ."\n"; }
+};
+$funcs['}FFI'] = function() { pop(); $words = pop_back_to('FFI{', '}FFI'); 
+    push(function() use ($words) { eval("namespace language; " . implode(" ", $words)); });  };
 
-    public static function subtraction() {
-        $args = func_get_args();
-        $sum = 0;
-        foreach($args as $arg) {
-            $sum -= $arg;
-        }
-        return $sum;
-    }
 
-    public static function division() {
-        $args = func_get_args();
-        $prod = 1;
-        foreach($args as $arg) {
-            $prod /= $arg;
-        }
-        return $prod;
+$funcs['load'] = function() { pop(); $c = file_get_contents(pop()); read($c); };
+$funcs['clear'] = function() { global $stack; $stack = array(); };
+$funcs['cond'] = function() { pop(); $key = pop(); $dict = pop(); push($dict[$key]);; };
+$funcs['call'] = function() { pop(); $a = pop(); $a(); };
+$funcs['swap'] = function() { pop(); $a = pop(); $b = pop(); push($a); push($b); };
+$funcs['dup'] = function() { pop(); $a = pop(); push($a); push($a); };
+$funcs['over'] = function() { pop(); $b = pop(); $a = pop(); push($a); push($b); push($a); };
+$funcs['pick'] = function() { pop(); $z = pop(); $y = pop(); $x = pop(); push($x); push($y); push($z); push($x); };
+$funcs['rot'] = function() { pop(); $z = pop(); $y = pop(); $x = pop(); push($y); push($z); push($x); };
+$funcs['-rot'] = function() { pop(); $z = pop(); $y = pop(); $x = pop(); push($z); push($x); push($y); };
+$funcs['2dup'] = function() { pop(); $a = pop(); $b = pop(); push($b); push($a); push($b); push($a); };
+$funcs['drop'] = function() { pop(); pop(); };
+$funcs['2drop'] = function() { pop(); pop(); pop(); };
+$funcs['+'] = function() { pop(); push(pop() + pop()); };
+$funcs['-'] = function() { pop(); $a = pop(); $b = pop(); push($b - $a); };
+$funcs['*'] = function() { pop(); push(pop() * pop()); };
+$funcs['/'] = function() { pop(); $a = pop(); $b = pop(); push($b / $a); };
+$funcs['mod'] = function() { pop(); $a = pop(); $b = pop(); push($b % $a); };
+$funcs['.'] = function() { pop(); echo pop(); };
+$funcs['echo'] = $funcs['.'];
+$funcs['length'] = function() { pop(); push(count(pop())); };
+$funcs['max'] = function() { $b = pop(); $a = pop(); push( ($a > $b) ? $a : $b  ); };
+$funcs['reduce'] = function() { 
+    global $stack;
+    pop(); 
+    $op = pop(); 
+    $ii = count($stack) - 1;
+    for($i=0; $i<$ii; $i++) {
+        push($op);
+        read("call");
     }
+};
+$funcs['++'] = function() { pop(); $b = pop(); $a = pop(); push($a . $b); };
+$funcs['concat'] = $funcs['++'];
+$funcs['iota'] = function() { pop(); for($i=0,$ii=pop(); $i<$ii; $i++) { push($i); }  };
 
-    public static function evalThunk($f, $args) {
-        if (is_callable($f)) {
-          $r = $f($args);
-          return Prelude::evalThunk($r, $args);
-        } else {
-          return $f;
-        }
-    }
+$funcs['class'] = function() {
+    pop();
+    $name = pop();
+    eval("class $name extends language\Prototype {}");
+};
+$funcs['new'] = function() {
+    pop();
+    $classname = pop();
+    $internals = pop();
+    push(new $classname($internals));
+};
 
-    public static function ignore($args) {
-        return;
-    }
+read(": 2over ( x y z -- x y z x y ) pick pick ;");
+
+
+// load a file if we have one
+if (isset($argv) && count($argv) > 1) {
+    $prog = file_get_contents( $argv[1] );
+    read($prog);
 }
 
 
-// ---------- start -------------
-if (count($argv) < 2) {
-    while(true) {
-        echo ">>> ";
-        $handle = fopen ("php://stdin","r");
-        $line = fgets($handle);
-        Parser::evaluate(Parser::tokenize($line));
-        echo "\n";
-    }
-    exit(0);
-}
 
-$prog = file_get_contents( $argv[1] );
-Parser::evaluate(Parser::tokenize($prog));
+
 
 
