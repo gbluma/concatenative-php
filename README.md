@@ -10,11 +10,13 @@ parenthesis comes before the function name and the parameters are delimited by s
 `(foo x y)` ).  This language also delimits with spaces (same as Lisp) but switches the order
 from right to left and removes the requirement for parentheses too.  (i.e. `y x foo`).
 
-    3 3 + 2 - .
+    3 3 + 2 - println
+    ( prints 4 )
+    
+    "Hello world" println
+    ( prints "Hello world" )
     
 
-    "Hello world" println
-    
 
 Comments
 ------------------
@@ -32,12 +34,11 @@ thunks or, as they are known in the Forth community *quotations*, you can
 define them with square brackets.
 
     [ dup * ]
-    clear           ( empty the stack )
     
 
 And these can be called with the `call` word, or passed around.
 
-    3 [ dup * ] call .
+    3 [ dup * ] call println
     
     : deferred-square ( -- quot ) 
       [ dup * ] ;
@@ -46,8 +47,7 @@ And these can be called with the `call` word, or passed around.
       3 deferred-square ;
     
     foo
-    
-    clear           ( empty the stack )
+    ( prints 9 )
     
    
 Arrays
@@ -56,13 +56,14 @@ Arrays
 Arrays are trivial to define, all of the following are valid arrays:
 
     { 1 2 3 }                        ( simple array )
+    
     { 2 3 { 1 2 3 } }                ( nested array )
+    
     { "WI" => "Wisconsin"            ( associative array )
       "IL" => "Illinois" }
+    
     { "square" => [ dup * ]          ( array of qoutations )
       "cube"   => [ dup dup * * ] }
-    
-    clear           ( empty the stack )
     
 
 
@@ -72,7 +73,7 @@ Defining functions
 You may have already noticed, but you can define functions using the colon
 word. The syntax is as follows:
 
-   : <name> (<comment>) <definition> ;
+    : <name> (<comment>) <definition> ;
 
 When that word appears in the syntax it will be called immediately unless it is
 in a function defininition or inside square brackets.
@@ -81,11 +82,11 @@ in a function defininition or inside square brackets.
 Conditional operations
 ----------------------
 
-   >>> { 'rtf' => 'Rich Text Format'
-         'doc' => 'Microsoft Document Format'
-         'xml' => 'Extensible Markup Language'
-       } 'rtf' cond .
-   Rich Text Format
+    { 'rtf' => "Rich Text Format"
+      'doc' => "Microsoft Document Format"
+      'xml' => "Extensible Markup Language"
+    } 'rtf' cond println 
+    ( prints "Rich Text Format" )
 
 
 Objects

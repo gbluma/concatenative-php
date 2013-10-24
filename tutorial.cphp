@@ -1,13 +1,14 @@
-3 3 + 2 - .
+3 3 + 2 - println
+( prints 4 )
 
 "Hello world" println
+( prints "Hello world" )
 
 ( This is a comment )
 
 [ dup * ]
-clear           ( empty the stack )
 
-3 [ dup * ] call .
+3 [ dup * ] call println
 
 : deferred-square ( -- quot ) 
   [ dup * ] ;
@@ -16,18 +17,23 @@ clear           ( empty the stack )
   3 deferred-square ;
 
 foo
-
-clear           ( empty the stack )
+( prints 9 )
 
 { 1 2 3 }                        ( simple array )
+
 { 2 3 { 1 2 3 } }                ( nested array )
+
 { "WI" => "Wisconsin"            ( associative array )
   "IL" => "Illinois" }
+
 { "square" => [ dup * ]          ( array of qoutations )
   "cube"   => [ dup dup * * ] }
 
-clear           ( empty the stack )
-
+{ 'rtf' => "Rich Text Format"
+  'doc' => "Microsoft Document Format"
+  'xml' => "Extensible Markup Language"
+} 'rtf' cond println 
+( prints "Rich Text Format" )
 ( Here we define a new class, mainly for compatability with PHP )
 Document class 
 
