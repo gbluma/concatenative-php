@@ -32,7 +32,7 @@ function process($word) {
         if (isset($funcs[$word])) $funcs[$word](); 
     }
 }
-function push($x) { global $stack, $funcs; return array_push($stack, $x); }
+function push($x) { global $stack, $funcs; return $stack[] = $x; }
 function pop() { 
     global $stack, $funcs; 
     if (count($stack) > 0) return array_pop($stack); 
@@ -52,6 +52,11 @@ function pop_back_to($down,$up) {
     }
     return array_reverse($words);
 }
+function unwrap($quot) {
+    $l = strpos($quot, ' ');
+    $r = strrpos($quot, ' ');
+    return substr($quot, $l, $r-$l);
+}
 
 function read($str) {
     global $defer;
@@ -66,7 +71,10 @@ function read($str) {
             case "\r": 
             case "\n": 
                 if (!$squote && !$dquote) {
-                    if (!empty($word)) { push($word); process($word); } 
+                    if (!empty($word)) { 
+                        push($word); 
+                        process($word); 
+                    } 
                     $word = ''; 
                 } else { $word .= $c; }
                 break;
@@ -76,7 +84,10 @@ function read($str) {
             default: $word .= $c;
         }
     }
-    if (!empty($word)) { push($word); process($word); }
+    if (!empty($word)) { 
+        push($word); 
+        process($word); 
+    }
 }
 
 // ---------------- std library -----------------
@@ -84,9 +95,7 @@ function read($str) {
 $funcs[']'] = function() { 
     pop(); 
     $words = pop_back_to('[', ']');
-    push(function() use ($words) { 
-        return read(implode(" ", $words)); 
-    });
+    push(implode(' ', $words));
 };
 $funcs[';'] = function() { 
     global $funcs;
@@ -128,13 +137,13 @@ $funcs['.stack'] = function() {
     foreach($stack as $s) { echo var_export($s) ."\n"; }
 };
 $funcs['}FFI'] = function() { pop(); $words = pop_back_to('FFI{', '}FFI'); 
-    push(function() use ($words) { eval("namespace language; " . implode(" ", $words)); });  };
+    eval("namespace language; " . implode(" ", $words)); };
 
 
 $funcs['load'] = function() { pop(); $c = file_get_contents(pop()); read($c); };
 $funcs['clear'] = function() { global $stack; $stack = array(); };
 $funcs['cond'] = function() { pop(); $key = pop(); $dict = pop(); push($dict[$key]);; };
-$funcs['call'] = function() { pop(); $a = pop(); $a(); };
+$funcs['call'] = function() { pop(); $a = pop(); read($a); };
 $funcs['swap'] = function() { pop(); $a = pop(); $b = pop(); push($a); push($b); };
 $funcs['dup'] = function() { pop(); $a = pop(); push($a); push($a); };
 $funcs['over'] = function() { pop(); $b = pop(); $a = pop(); push($a); push($b); push($a); };
