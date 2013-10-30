@@ -1,8 +1,9 @@
+#!/usr/bin/env php
 <?php
 
-namespace language;
+namespace Concatenative;
 
-require_once("language.php");
+require_once("src/Concatenative/language.php");
 
 // start repl
 echo <<<HERE

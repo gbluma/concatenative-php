@@ -1,0 +1,15 @@
+{
+    "name": "concatenative-php",
+    "require": {
+        "phpunit/phpunit": "3.7.*"
+    },
+    "autoload": {
+        "psr-0": { "Concatenative" : "src/" }
+    },
+    "authors": [
+        {
+            "name": "Garrett Bluma",
+            "email": "gbluma@deltadentalwi.com"
+        }
+    ]
+}

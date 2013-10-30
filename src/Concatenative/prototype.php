@@ -1,6 +1,6 @@
 <?php
 
-namespace language;
+namespace Concatenative;
 
 /**
  * This allows the classes to be constructed from lists using prototype-style objects.

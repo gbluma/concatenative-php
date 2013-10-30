@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace language;
+namespace Concatenative;
 
 require_once("prototype.php");
 
@@ -95,7 +95,9 @@ function read($str) {
 $funcs[']'] = function() { 
     pop(); 
     $words = pop_back_to('[', ']');
-    push(implode(' ', $words));
+    push(function() use ($words) {
+        return read(implode(" ", $words));
+    });
 };
 $funcs[';'] = function() { 
     global $funcs;
@@ -134,16 +136,22 @@ $funcs['.stack'] = function() {
     global $stack; 
     pop();
     echo "\n----Stack----\n";;
-    foreach($stack as $s) { echo var_export($s) ."\n"; }
+    foreach($stack as $s) { 
+        echo var_export($s) ."\n"; 
+    }
 };
-$funcs['}FFI'] = function() { pop(); $words = pop_back_to('FFI{', '}FFI'); 
-    eval("namespace language; " . implode(" ", $words)); };
-
+$funcs['}FFI'] = function() { 
+    pop(); 
+    $words = pop_back_to('FFI{', '}FFI'); 
+    function () use ($words) { 
+        return eval("namespace Concatenative; " . implode(" ", $words)); 
+    };
+};
 
 $funcs['load'] = function() { pop(); $c = file_get_contents(pop()); read($c); };
 $funcs['clear'] = function() { global $stack; $stack = array(); };
 $funcs['cond'] = function() { pop(); $key = pop(); $dict = pop(); push($dict[$key]);; };
-$funcs['call'] = function() { pop(); $a = pop(); read($a); };
+$funcs['call'] = function() { pop(); $a = pop(); $a(); };
 $funcs['swap'] = function() { pop(); $a = pop(); $b = pop(); push($a); push($b); };
 $funcs['dup'] = function() { pop(); $a = pop(); push($a); push($a); };
 $funcs['over'] = function() { pop(); $b = pop(); $a = pop(); push($a); push($b); push($a); };
@@ -189,7 +197,6 @@ $funcs['new'] = function() {
 };
 
 read(": 2over ( x y z -- x y z x y ) pick pick ;");
-
 
 // load a file if we have one
 if (isset($argv) && count($argv) > 1) {

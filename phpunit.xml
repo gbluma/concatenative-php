@@ -1,0 +1,14 @@
+<phpunit colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         syntaxCheck="false"
+>
+    <testsuites>
+        <testuite name="App Tests">
+            <directory>tests</directory>
+        </testuite>
+    </testsuites>
+</phpunit>
