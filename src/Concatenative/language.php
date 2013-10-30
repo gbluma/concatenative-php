@@ -44,8 +44,11 @@ function push($x)
 function pop()
 {
     global $stack, $funcs;
-    if ( count( $stack ) > 0 ) return array_pop( $stack );
-    else throw new \Exception( "unable to pop value from stack: stack empty" );
+    if ( count( $stack ) > 0 ) { 
+        return array_pop( $stack );
+    } else {
+        throw new \Exception( "unable to pop value from stack: stack empty" );
+    }
 }
 
 function pop_back_to($down, $up)
@@ -76,7 +79,7 @@ function unwrap($quot)
 function read($str)
 {
     global $defer;
-    $squote = $dquote = false;
+    $squote = $dquote = $inFFI = false;
     $word = '';
     foreach ( str_split( $str ) as $c ) {
         switch ( $c )
@@ -84,32 +87,39 @@ function read($str)
             case "[":
             case "(":
             case ":":
-                $defer++;
+                if ( !$squote && !$dquote && !$inFFI ) {
+                    $defer++;
+                }
                 $word .= $c;
                 break;
             case "]":
             case ")":
             case ";":
-                $defer--;
+                if ( !$squote && !$dquote && !$inFFI ) {
+                    $defer--;
+                }
                 $word .= $c;
                 break;
             
             case " ":
             case "\r":
             case "\n":
-                if ( !$squote && !$dquote ) {
+                if ( !$squote && !$dquote && !$inFFI ) {
                     if ( !empty( $word ) ) {
                         push( $word );
                         process( $word );
+                        $word = '';
                     }
-                    $word = '';
                 } else {
+                    if ($word == "FFI{") $inFFI = true;
+                    if ($word == "}FFI") { $inFFI = false; push($word); process($word); }
                     $word .= $c;
                 }
                 break;
             // case "'": $squote = !$squote; break;
             case '"':
                 $dquote = !$dquote;
+                $word .= $c;
                 break;
             
             default :
@@ -124,34 +134,28 @@ function read($str)
 
 // ---------------- std library -----------------
 
-$funcs[']'] = function ()
-{
+$funcs[']'] = function () {
     pop();
     $words = pop_back_to( '[', ']' );
-    push( function () use($words)
-    {
+    push( function () use($words) {
         return read( implode( " ", $words ) );
-    } );
+    });
 };
-$funcs[';'] = function ()
-{
+$funcs[';'] = function () {
     global $funcs;
     pop();
     $words = pop_back_to( ':', ';' );
     $name = array_shift( $words );
-    $funcs[$name] = function () use($words)
-    {
+    $funcs[$name] = function () use($words) {
         pop();
         return read( implode( " ", $words ) );
     };
 };
-$funcs[')'] = function ()
-{
+$funcs[')'] = function () {
     pop();
     $words = pop_back_to( '(', ')' );
 };
-$funcs['}'] = function ()
-{
+$funcs['}'] = function () {
     pop();
     $words = pop_back_to( '{', '}' );
     if ( in_array( '=>', $words ) ) {
@@ -171,19 +175,16 @@ $funcs['}'] = function ()
     }
 };
 
-$funcs['var_dump'] = function ()
-{
+$funcs['var_dump'] = function () {
     pop();
     var_dump( pop() );
 };
-$funcs['println'] = function ()
-{
+$funcs['println'] = function () {
     pop();
     echo (pop() . "\n");
 };
 
-$funcs['.stack'] = function ()
-{
+$funcs['.stack'] = function () {
     global $stack;
     pop();
     echo "\n----Stack----\n";
@@ -192,58 +193,50 @@ $funcs['.stack'] = function ()
         echo var_export( $s ) . "\n";
     }
 };
-$funcs['}FFI'] = function ()
-{
+$funcs['}FFI'] = function () {
     pop();
     $words = pop_back_to( 'FFI{', '}FFI' );
-    function () use($words)
+    push(function () use($words)
     {
         return eval( "namespace Concatenative; " . implode( " ", $words ) );
-    };
+    });
 };
 
-$funcs['load'] = function ()
-{
+$funcs['load'] = function () {
     pop();
     $c = file_get_contents( pop() );
     read( $c );
 };
-$funcs['clear'] = function ()
-{
+$funcs['clear'] = function () {
     global $stack;
     $stack = array();
 };
-$funcs['cond'] = function ()
-{
+$funcs['cond'] = function () {
     pop();
     $key = pop();
     $dict = pop();
     push( $dict[$key] );
     ;
 };
-$funcs['call'] = function ()
-{
+$funcs['call'] = function () {
     pop();
     $a = pop();
     $a();
 };
-$funcs['swap'] = function ()
-{
+$funcs['swap'] = function () {
     pop();
     $a = pop();
     $b = pop();
     push( $a );
     push( $b );
 };
-$funcs['dup'] = function ()
-{
+$funcs['dup'] = function () {
     pop();
     $a = pop();
     push( $a );
     push( $a );
 };
-$funcs['over'] = function ()
-{
+$funcs['over'] = function () {
     pop();
     $b = pop();
     $a = pop();
@@ -251,8 +244,7 @@ $funcs['over'] = function ()
     push( $b );
     push( $a );
 };
-$funcs['pick'] = function ()
-{
+$funcs['pick'] = function () {
     pop();
     $z = pop();
     $y = pop();
@@ -262,8 +254,7 @@ $funcs['pick'] = function ()
     push( $z );
     push( $x );
 };
-$funcs['rot'] = function ()
-{
+$funcs['rot'] = function () {
     pop();
     $z = pop();
     $y = pop();
@@ -272,8 +263,7 @@ $funcs['rot'] = function ()
     push( $z );
     push( $x );
 };
-$funcs['-rot'] = function ()
-{
+$funcs['-rot'] = function () {
     pop();
     $z = pop();
     $y = pop();
@@ -282,8 +272,7 @@ $funcs['-rot'] = function ()
     push( $x );
     push( $y );
 };
-$funcs['2dup'] = function ()
-{
+$funcs['2dup'] = function () {
     pop();
     $a = pop();
     $b = pop();
@@ -292,50 +281,42 @@ $funcs['2dup'] = function ()
     push( $b );
     push( $a );
 };
-$funcs['drop'] = function ()
-{
+$funcs['drop'] = function () {
     pop();
     pop();
 };
-$funcs['2drop'] = function ()
-{
+$funcs['2drop'] = function () {
     pop();
     pop();
     pop();
 };
-$funcs['+'] = function ()
-{
+$funcs['+'] = function () {
     pop();
     push( pop() + pop() );
 };
-$funcs['-'] = function ()
-{
+$funcs['-'] = function () {
     pop();
     $a = pop();
     $b = pop();
     push( $b - $a );
 };
-$funcs['*'] = function ()
-{
+$funcs['*'] = function () {
     pop();
     push( pop() * pop() );
 };
-$funcs['/'] = function ()
-{
+$funcs['/'] = function () {
     pop();
     $a = pop();
     $b = pop();
     push( $b / $a );
 };
-$funcs['mod'] = function ()
-{
+$funcs['mod'] = function () {
     pop();
     $a = pop();
     $b = pop();
     push( $b % $a );
 };
-$funcs['.'] = function ()
-{
+$funcs['.'] = function () {
     pop();
     echo pop();
 };
@@ -345,14 +326,12 @@ $funcs['length'] = function ()
     pop();
     push( count( pop() ) );
 };
-$funcs['max'] = function ()
-{
+$funcs['max'] = function () {
     $b = pop();
     $a = pop();
     push( ($a > $b) ? $a : $b );
 };
-$funcs['reduce'] = function ()
-{
+$funcs['reduce'] = function () {
     global $stack;
     pop();
     $op = pop();
@@ -362,8 +341,7 @@ $funcs['reduce'] = function ()
         read( "call" );
     }
 };
-$funcs['++'] = function ()
-{
+$funcs['++'] = function () {
     pop();
     $b = pop();
     $a = pop();
@@ -378,8 +356,7 @@ $funcs['iota'] = function ()
     }
 };
 
-$funcs['class'] = function ()
-{
+$funcs['class'] = function () {
     pop();
     $name = pop();
     eval( "class $name extends language\Prototype {}" );

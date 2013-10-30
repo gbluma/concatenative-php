@@ -90,5 +90,29 @@ class CoreLanguageTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue( count( $stack ) === 1 );
         $this->assertTrue( $stack[0] === 27 );
     }
+    
+    public function test_double_quotes() 
+    {
+        global $stack;
+        read( "\"hello there\"" );
+        $this->assertEquals(1, count( $stack ) );
+        $this->assertEquals("\"hello there\"", $stack[0]);
+    }
+
+    public function test_double_quotes_with_colon() 
+    {
+        global $stack;
+        read( "\"hello: there\"" );
+        $this->assertEquals(1, count( $stack ) );
+        $this->assertEquals("\"hello: there\"", $stack[0]);
+    }
+
+    public function test_double_quotes_with_semicolon() 
+    {
+        global $stack;
+        read( "\"hello; there\"" );
+        $this->assertEquals(1, count( $stack ) );
+        $this->assertEquals("\"hello; there\"", $stack[0]);
+    }
 }
 
