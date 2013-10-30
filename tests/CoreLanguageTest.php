@@ -68,6 +68,54 @@ class CoreLanguageTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue( count( $stack ) === 1 );
         $this->assertEquals( 225, $stack[0] );
     }
+    
+    public function test_array_creation() {
+    	global $stack;
+    	read("{ 1 2 3 }");
+        $this->assertTrue( count( $stack ) === 1 );
+        $this->assertEquals( array(1,2,3), $stack[0] );
+    }
+
+    public function test_nested_array_creation() {
+    	global $stack;
+    	read("{ 1 { 5 5 2 } 3 }");
+        $this->assertTrue( count( $stack ) === 1 );
+        $this->assertEquals( array(1, array(5,5,2),3), $stack[0] );
+    }
+
+    public function test_assoc_array_creation() {
+    	global $stack;
+    	read("{ A => B }");
+        $this->assertTrue( count( $stack ) === 1 );
+        $this->assertEquals( array('A' => 'B'), $stack[0] );
+    }
+
+    public function test_multi_assoc_array_creation() {
+    	global $stack;
+    	read("{ A => B 
+                C => D }");
+        $this->assertTrue( count( $stack ) === 1 );
+        $this->assertEquals( array('A' => 'B', 'C' => 'D'), $stack[0] );
+    }
+
+    public function test_nested_multi_assoc_array_creation() {
+    	global $stack;
+    	read("{ A => { E => F } 
+                C => D }");
+        $this->assertTrue( count( $stack ) === 1 );
+        $this->assertEquals( array('A' => array('E' => 'F'), 'C' => 'D'), $stack[0] );
+    }
+
+    public function test_quot_in_assoc_array() {
+    	global $stack;
+    	read("{ A => [ dup * ]
+                C => D }");
+        $this->assertTrue( count( $stack ) === 1 );
+        $this->assertTrue( isset($stack[0]['A']) );
+        $this->assertTrue( is_callable($stack[0]['A']) );
+        $this->assertTrue( isset($stack[0]['C']) );
+        $this->assertEquals('D', $stack[0]['C'] );
+    }
 
     public function test_stack_is_still_empty_after_teardown()
     {
