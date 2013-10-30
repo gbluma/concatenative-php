@@ -162,5 +162,13 @@ class CoreLanguageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, count( $stack ) );
         $this->assertEquals("\"hello; there\"", $stack[0]);
     }
+    
+    /**
+     * @expectedException Exception
+     */
+    public function test_that_pop_throws_error_on_empty_stack()
+    {
+        read("."); // should pop one off the stack
+    }
 }
 

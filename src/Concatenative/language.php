@@ -69,13 +69,6 @@ function pop_back_to($down, $up)
     return array_reverse( $words );
 }
 
-function unwrap($quot)
-{
-    $l = strpos( $quot, ' ' );
-    $r = strrpos( $quot, ' ' );
-    return substr( $quot, $l, $r - $l );
-}
-
 function read($str)
 {
     global $defer;
@@ -327,6 +320,7 @@ $funcs['length'] = function ()
     push( count( pop() ) );
 };
 $funcs['max'] = function () {
+    pop();
     $b = pop();
     $a = pop();
     push( ($a > $b) ? $a : $b );
