@@ -158,7 +158,8 @@ $funcs['}'] = function () {
         $output = array();
         for ($i = 0, $ii = count( $words ); $i < $ii; $i++) {
             if ( $words[$i] == "=>" ) {
-                if ( $i - 1 < 0 || $i + 1 >= $ii ) {throw new \Exception( "Syntax error on associative array (" . implode( ' ', $words ) . ")" );}
+                if ( $i - 1 < 0 || $i + 1 >= $ii ) {
+                    throw new \Exception( "Syntax error on associative array (" . implode( ' ', $words ) . ")" );}
                 $key = $words[$i - 1];
                 $value = $words[$i + 1];
                 $output[$key] = $value;
@@ -212,6 +213,33 @@ $funcs['cond'] = function () {
     $dict = pop();
     push( $dict[$key] );
     ;
+};
+$funcs['>'] = function() {
+    pop();
+    push(pop() < pop());
+};
+$funcs['>='] = function() {
+    pop();
+    push(pop() <= pop());
+};
+$funcs['<'] = function() {
+    pop();
+    push(pop() > pop());
+};
+$funcs['<='] = function() {
+    pop();
+    push(pop() >= pop());
+};
+$funcs['=='] = function() {
+    pop();
+    push(pop() === pop());
+};
+$funcs['if'] = function() {
+    pop();
+    $else = pop();
+    $if = pop();
+    $cond = pop();
+    if ($cond) $if(); else $else();
 };
 $funcs['call'] = function () {
     pop();
