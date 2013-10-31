@@ -3,6 +3,8 @@
 namespace Concatenative;
 
 $funcs = array();
+$types = array();
+
 $funcs[']'] = function () {
     pop();
     $words = pop_back_to( '[', ']' );
@@ -11,10 +13,12 @@ $funcs[']'] = function () {
     });
 };
 $funcs[';'] = function () {
-    global $funcs;
+    global $funcs, $types;
     pop();
     $words = pop_back_to( ':', ';' );
     $name = array_shift( $words );
+    $type = read_effects( $words );
+    $types[$name] = $type;
     $funcs[$name] = function () use($words) {
         pop();
         return read( implode( " ", $words ) );

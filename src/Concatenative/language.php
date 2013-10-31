@@ -127,6 +127,24 @@ function read($str)
     }
 }
 
+function read_type($a) 
+{
+    $x = gettype($a);
+    if ($x === 'object') return get_class($a);
+    else return $x;
+}
+
+function read_effects($words) {
+    $output = array();
+    $capture = false;
+    foreach($words as $word) {
+        if ($word == "(") { $capture = true; continue; }
+        if ($word == ")") { $capture = false; break; }
+        $output[] = $word;
+    }
+    return $output;
+}
+
 
 read( ": 2over ( x y z -- x y z x y ) pick pick ;" );
 
