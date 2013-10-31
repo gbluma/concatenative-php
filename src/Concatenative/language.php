@@ -21,6 +21,8 @@ namespace Concatenative;
 
 require_once ("prototype.php");
 
+class EmptyStackException extends \Exception {}
+
 $funcs = array();
 $stack = array();
 $defer = 0;
@@ -47,7 +49,7 @@ function pop()
     if ( count( $stack ) > 0 ) { 
         return array_pop( $stack );
     } else {
-        throw new \Exception( "unable to pop value from stack: stack empty" );
+        throw new EmptyStackException( "unable to pop value from stack: stack empty" );
     }
 }
 
@@ -353,7 +355,7 @@ $funcs['iota'] = function ()
 $funcs['class'] = function () {
     pop();
     $name = pop();
-    eval( "class $name extends language\Prototype {}" );
+    eval( "class $name extends Concatenative\Prototype {}" );
 };
 $funcs['new'] = function ()
 {

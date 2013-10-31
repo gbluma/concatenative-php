@@ -164,7 +164,7 @@ class CoreLanguageTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
-     * @expectedException Exception
+     * @expectedException Concatenative\EmptyStackException
      */
     public function test_that_pop_throws_error_on_empty_stack()
     {
