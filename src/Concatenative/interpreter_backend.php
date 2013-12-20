@@ -64,7 +64,7 @@ $funcs['.stack'] = function () {
     echo "\n----Stack----\n";
     ;
     foreach ( $stack as $s ) {
-        echo var_export( $s ) . "\n";
+        echo var_export( $s,true ) . "\n";
     }
 };
 $funcs['}FFI'] = function () {

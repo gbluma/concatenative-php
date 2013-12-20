@@ -1,7 +1,7 @@
 
 test:
 	#php language.php tutorial.cphp
-	phpunit --coverage-text=/tmp/coverage.txt tests
+	php ./vendor/phpunit/phpunit/phpunit.php --coverage-text=/tmp/coverage.txt tests
 	@cat /tmp/coverage.txt
 	@rm /tmp/coverage.txt
 	@echo "\n"

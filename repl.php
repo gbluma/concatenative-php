@@ -1,7 +1,5 @@
 #!/usr/bin/env php
-<?php
-
-namespace Concatenative;
+<?php 
 
 require_once("src/Concatenative/language.php");
 
@@ -20,8 +18,8 @@ while(true) {
     $handle = fopen ("php://stdin","r");
     $line = fgets($handle);
     try {
-        read($line);
-        if (count($stack) > 0) read(".stack");
+        Concatenative\read($line);
+        if (count($stack) > 0) Concatenative\read(".stack");
         else echo "\n";
     } catch (\Exception $e) {
         echo "ERROR: " . $e->getMessage() . "\n";
