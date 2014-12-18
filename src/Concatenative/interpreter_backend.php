@@ -53,9 +53,18 @@ $funcs['var_dump'] = function () {
     pop();
     var_dump( pop() );
 };
-$funcs['println'] = function () {
+$funcs['.'] = function () {
     pop();
-    echo (pop() . "\n");
+    $val = pop();
+    if (is_array($val)) {
+        print_r($val);
+    } else {
+        echo $val;
+    }
+};
+$funcs['println'] = function () {
+    $funcs['.']();
+    echo '\n';
 };
 
 $funcs['.stack'] = function () {
@@ -64,7 +73,7 @@ $funcs['.stack'] = function () {
     echo "\n----Stack----\n";
     ;
     foreach ( $stack as $s ) {
-        echo var_export( $s,true ) . "\n";
+        print_r($s); echo "\n";
     }
 };
 $funcs['}FFI'] = function () {
@@ -114,15 +123,19 @@ $funcs['=='] = function() {
 };
 $funcs['if'] = function() {
     pop();
-    $else = pop();
-    $if = pop();
     $cond = pop();
-    if ($cond) $if(); else $else();
+    $neg = pop();
+    $pos = pop();
+    if ($cond == "true") $pos(); else $neg();
 };
 $funcs['call'] = function () {
     pop();
     $a = pop();
-    $a();
+    if (is_callable($a)) {
+        $a();
+    } else {
+        throw new \Exception("Unable to 'call' since ($a) is not callable");
+    }
 };
 $funcs['swap'] = function () {
     pop();
@@ -216,10 +229,6 @@ $funcs['mod'] = function () {
     $a = pop();
     $b = pop();
     push( $b % $a );
-};
-$funcs['.'] = function () {
-    pop();
-    echo pop();
 };
 $funcs['echo'] = $funcs['.'];
 $funcs['length'] = function ()

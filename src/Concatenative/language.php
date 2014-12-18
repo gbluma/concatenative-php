@@ -146,7 +146,7 @@ function read_effects($words) {
 }
 
 
-read( ": 2over ( x y z -- x y z x y ) pick pick ;" );
+//read( ": 2over ( x y z -- x y z x y ) pick pick ;" );
 
 // load a file if we have one
 if ( isset( $argv ) && count( $argv ) > 1 ) {
